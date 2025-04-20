@@ -1,0 +1,76 @@
+extends ../../layouts/default.pug
+
+block main
+  section.products-area.py-5
+    .container
+      .row.mb-4
+        .col-12
+          .section-heading.text-center
+            h2.display-4.font-weight-bold Danh sách sản phẩm
+            .divider.mx-auto.my-3
+              span.divider-dot
+              span.divider-line
+              span.divider-dot
+            p.text-muted Khám phá bộ sưu tập sản phẩm độc đáo và chất lượng cao của chúng tôi
+      
+      .row.mb-4
+        .col-md-6
+          form.form-inline
+            .input-group.w-100
+              input.form-control(type="text" placeholder="Tìm kiếm sản phẩm...")
+              .input-group-append
+                button.btn.btn-primary(type="submit")
+                  i.fa.fa-search
+        .col-md-6
+          .d-flex.justify-content-md-end.mt-3.mt-md-0
+            .dropdown.mr-3
+              button.btn.btn-outline-secondary.dropdown-toggle(type="button" data-toggle="dropdown") Sắp xếp
+              .dropdown-menu
+                a.dropdown-item(href="/products?sort=price_asc") Giá: Thấp đến cao
+                a.dropdown-item(href="/products?sort=price_desc") Giá: Cao đến thấp
+                a.dropdown-item(href="/products?sort=newest") Mới nhất
+                a.dropdown-item(href="/products?sort=popular") Phổ biến nhất
+      
+      .row
+        each product in products
+          .col-md-6.col-lg-4.mb-4
+            .card.product-card.h-100.shadow-sm.border-0
+              .product-badge
+                if product.discount
+                  span.badge.badge-danger -#{product.discount}%
+                if product.isNew
+                  span.badge.badge-success Mới
+              
+              .product-thumb.position-relative
+                img.card-img-top(src=product.thumbnail, alt=product.title)
+                .product-overlay
+                  .d-flex.justify-content-center
+                    a.btn.btn-sm.btn-outline-light.mx-1(href="#" title="Thêm vào giỏ")
+                      i.fa.fa-shopping-cart
+                    a.btn.btn-sm.btn-outline-light.mx-1(href="#" title="Yêu thích")
+                      i.fa.fa-heart
+                    a.btn.btn-sm.btn-outline-light.mx-1(href=`/products/${product.id}` title="Xem chi tiết")
+                      i.fa.fa-eye
+              
+              .card-body
+                h5.card-title.product-title.text-truncate #{product.title}
+                .d-flex.align-items-center.mb-2
+                  .product-rating
+                    - var rating = product.rating || 4
+                    - for (var i = 1; i <= 5; i++)
+                      if i <= rating
+                        i.fa.fa-star.text-warning
+                      else
+                        i.fa.fa-star.text-muted
+                  span.small.text-muted.ml-2 (#{product.reviews || 0} đánh giá)
+                
+                .product-price.d-flex.align-items-center
+                  span.product-price-old.text-muted.mr-2
+                    del #{product.price} đ
+                  span.product-price-new.font-weight-bold.text-primary #{product.priceNew} đ
+                
+                if product.description
+                  p.card-text.small.text-muted.mt-2 #{product.description.substring(0, 80)}...
+              
+              .card-footer.bg-white.border-0
+                a.btn.btn-primary.btn-block(href=`/products/${product.slug}`) Xem chi tiết

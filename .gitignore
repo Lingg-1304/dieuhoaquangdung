@@ -1,0 +1,33 @@
+# Bỏ qua file .env (chứa thông tin nhạy cảm)
+.env
+
+# Bỏ qua thư mục node_modules (Node.js)
+node_modules/
+
+# Bỏ qua thư mục build hoặc dist (file đã được biên dịch)
+build/
+dist/
+
+# Bỏ qua các file log
+*.log
+
+# Bỏ qua các file hệ điều hành
+.DS_Store       # macOS
+Thumbs.db       # Windows
+
+# Bỏ qua file tạm của IDE
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Laravel/PHP
+/vendor/
+.env
+/storage/*.key
+.vercel

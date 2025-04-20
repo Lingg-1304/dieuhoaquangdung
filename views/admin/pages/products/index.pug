@@ -1,0 +1,246 @@
+extends ../../layouts/default.pug
+include ../../mixins/search.pug
+block main
+  //- // Notifications
+  if success && success.length
+    each msg in success
+      .alert.alert-success.alert-dismissible.fade.show.shadow-sm.border-left.border-success.border-4.rounded-0.mb-3(role="alert")
+        .d-flex.align-items-center
+          i.fas.fa-check-circle.mr-3.text-success.fa-lg
+          div= msg
+        button.close(type="button", data-dismiss="alert", aria-label="Close")
+          span(aria-hidden="true") &times;
+
+  if error && error.length
+    each msg in error
+      .alert.alert-danger.alert-dismissible.fade.show.shadow-sm.border-left.border-danger.border-4.rounded-0.mb-3(role="alert")
+        .d-flex.align-items-center
+          i.fas.fa-exclamation-circle.mr-3.text-danger.fa-lg
+          div= msg
+        button.close(type="button", data-dismiss="alert", aria-label="Close")
+          span(aria-hidden="true") &times;
+
+  .container-fluid.py-4
+    //- // Header with action buttons
+    .card.shadow-sm.mb-4
+      .card-body
+        .d-md-flex.justify-content-between.align-items-center
+          h4.font-weight-bold.text-primary.mb-3.mb-md-0
+            i.fas.fa-boxes.mr-2
+            | Quản lý sản phẩm
+          .d-flex.flex-wrap
+            a.btn.btn-primary.shadow-sm.mr-2.mb-2.mb-md-0(href=prefixAdmin + '/products/create')
+              i.fas.fa-box-open.mr-1
+              | Thêm sản phẩm 
+            .btn-group.mr-2.mb-2.mb-md-0
+              form(id="form-status")
+                if status === undefined
+                  button.btn.btn-secondary(type="submit", name="status", value="") 
+                    i.fas.fa-list.mr-1
+                    | Tất cả
+                else 
+                  button.btn.btn-outline-secondary(type="submit", name="status", value="")
+                    i.fas.fa-list.mr-1
+                    | Tất cả
+                if status === "active"
+                  button.btn.btn-success(type="submit", name="status", value="active")
+                    i.fas.fa-check-circle.mr-1
+                    | Còn bán
+                else 
+                  button.btn.btn-outline-success(type="submit", name="status", value="active")
+                    i.fas.fa-check-circle.mr-1
+                    | Còn bán
+                if status === "inactive"
+                  button.btn.btn-danger(type="submit", name="status", value="inactive")
+                    i.fas.fa-times-circle.mr-1
+                    | Dừng bán
+                else 
+                  button.btn.btn-outline-danger(type="submit", name="status", value="inactive")
+                    i.fas.fa-times-circle.mr-1
+                    | Dừng bán
+            .search-container
+              +search(keyword)
+    
+    //- // Products table card
+    .card.shadow-sm
+      .card-header.bg-white.py-3
+        h5.mb-0.font-weight-bold.text-dark Danh sách sản phẩm
+      .card-body.p-0
+        .table-responsive
+          table.table.table-striped.mb-0
+            thead.bg-light
+              tr
+                th.text-center STT
+                th.text-center Vị trí
+                th.text-center Ảnh
+                th Tên sản phẩm
+                th.text-right Giá (USD)
+                th.text-center Giảm giá
+                th.text-center Tồn kho
+                th.text-center Trạng thái
+                th.text-center Hành động
+            tbody
+              if products.length
+                each item, index in products
+                  tr
+                    td.text-center #{index + (currentPage-1)*5 + 1}
+                    td.text-center #{item.position}
+                    td.text-center 
+                      .product-img-container
+                        a(href=item.thumbnail)  
+                          img.img-thumbnail(src=item.thumbnail, alt=item.title, width="60", height="60")
+                    td.font-weight-bold #{item.title}
+                    td.text-right.font-weight-bold $#{item.price}
+                    td.text-center 
+                      if item.discountPercentage > 0
+                        span.badge.badge-warning.p-2 #{item.discountPercentage}%
+                      else
+                        span.badge.badge-light.p-2 0%
+                    td.text-center 
+                      if item.stock > 10
+                        span.badge.badge-success.p-2 #{item.stock}
+                      else if item.stock > 0
+                        span.badge.badge-warning.p-2 #{item.stock}
+                      else
+                        span.badge.badge-danger.p-2 Hết hàng
+                      
+                    td.text-center 
+                      form(method="POST", action=`/admin/products/change-status/${item.status === 'active' ? 'inactive' : 'active'}/${item._id}`, style="display:inline;")
+                        input(type="hidden", name="currentPage", value=currentPage)
+                        if item.status === 'active'
+                          button.btn.btn-sm.btn-success.px-3(type="submit") 
+                            i.fas.fa-check-circle.mr-1
+                            | Còn bán
+                        else
+                          button.btn.btn-sm.btn-danger.px-3(type="submit") 
+                            i.fas.fa-times-circle.mr-1
+                            | Dừng bán
+                        
+                    td.text-center
+                      .btn-group
+                        a.btn.btn-sm.btn-info(href=`${prefixAdmin}/products/edit/${item._id}`)
+                          i.fas.fa-edit.mr-1
+                          | Sửa
+                        form(method="POST", action=`${prefixAdmin}/products/delete/${item._id}?_method=DELETE`, style="display: inline;")
+                          button.btn.btn-sm.btn-danger(type="submit" onclick="return confirm('Bạn có chắc muốn xoá sản phẩm này?')")
+                            i.fas.fa-trash-alt.mr-1
+                            | Xoá
+              else
+                tr
+                  td(colspan="9").text-center.py-5
+                    .empty-state
+                      i.fas.fa-box-open.text-muted.mb-3
+                      p.text-muted Không có sản phẩm nào. Nhấn "Thêm sản phẩm" để bắt đầu.
+                      a.btn.btn-primary.mt-2(href=prefixAdmin + '/products/create') Thêm sản phẩm ngay
+      
+      //- // Pagination footer
+      if totalPages > 1
+        .card-footer.bg-white
+          nav.d-flex.justify-content-center
+            ul.pagination.pagination-sm.mb-0
+              //- // Nút "Trước"
+              li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+                a.page-link(
+                  href=`?page=${currentPage - 1}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                )
+                  i.fas.fa-angle-left
+                  span.sr-only Trước
+
+              //- // Trang đầu
+              if currentPage > 3
+                li.page-item
+                  a.page-link(
+                    href=`?page=1${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                  ) 1
+
+              //- // Dấu ...
+              if currentPage > 4
+                li.page-item.disabled
+                  span.page-link ...
+
+              //- // Các trang xung quanh trang hiện tại
+              each num in [...Array(totalPages).keys()].map(n => n + 1).filter(p => p >= currentPage - 2 && p <= currentPage + 2)
+                li.page-item(class=(num === currentPage ? 'active' : ''))
+                  a.page-link(
+                    href=`?page=${num}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                  ) #{num}
+
+              //- // Dấu ...
+              if currentPage < totalPages - 3
+                li.page-item.disabled
+                  span.page-link ...
+
+              //- // Trang cuối
+              if currentPage < totalPages - 2
+                li.page-item
+                  a.page-link(
+                    href=`?page=${totalPages}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                  ) #{totalPages}
+
+              //- // Nút "Sau"
+              li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+                a.page-link(
+                  href=`?page=${currentPage + 1}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                )
+                  i.fas.fa-angle-right
+                  span.sr-only Sau
+
+  style.
+    .border-4 {
+      border-width: 4px !important;
+    }
+    .card {
+      border: none;
+      border-radius: 0.5rem;
+    }
+    .table th {
+      border-top: none;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      color: #555;
+    }
+    .product-img-container {
+      width: 60px;
+      height: 60px;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+    .product-img-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .table td {
+      vertical-align: middle;
+    }
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    .empty-state i {
+      font-size: 3rem;
+    }
+    .search-container {
+      min-width: 250px;
+    }
+    .text-primary {
+      color: #4e73df !important;
+    }
+    .btn-primary {
+      background-color: #4e73df;
+      border-color: #4e73df;
+    }
+    .btn-primary:hover {
+      background-color: #3d5ecc;
+      border-color: #3d5ecc;
+    }
+    .pagination .page-link {
+      color: #4e73df;
+    }
+    .pagination .page-item.active .page-link {
+      background-color: #4e73df;
+      border-color: #4e73df;
+    }

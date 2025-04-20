@@ -1,0 +1,261 @@
+extends ../../layouts/default.pug
+
+block main
+  .container.py-4
+    // Breadcrumb
+    nav(aria-label="breadcrumb")
+      ol.breadcrumb.bg-light
+        li.breadcrumb-item
+          a(href="/") Trang chủ
+        li.breadcrumb-item
+          a(href="/products") Sản phẩm
+        li.breadcrumb-item.active(aria-current="page")= product.title
+
+    // Product Detail
+    .card.mb-4
+      .row.no-gutters
+        // Product Image
+        .col-md-5.border-right
+          .position-relative
+            if product.discountPercentage > 0
+              .position-absolute.p-2
+                span.badge.badge-danger -#{Math.round(product.discountPercentage)}%
+            
+            .p-3.text-center
+              img.img-fluid(src=product.thumbnail alt=product.title style="max-height:350px;")
+        
+        // Product Info
+        .col-md-7
+          .card-body
+            // Status and Title
+            if product.status === 'active'
+              span.badge.badge-success.mb-2 Còn hàng
+            else
+              span.badge.badge-secondary.mb-2 Ngừng kinh doanh
+            
+            h1.h2.mb-3= product.title
+            
+            // Rating
+            .mb-3
+              i.text-warning ★
+              i.text-warning ★
+              i.text-warning ★
+              i.text-warning ★
+              i.text-warning ☆
+              span.text-muted.ml-2 (16 đánh giá)
+            
+            // Price
+            .mb-4
+              if product.discountPercentage > 0
+                h3.text-danger.d-inline-block.mr-2 $#{(product.price * (1 - product.discountPercentage/100)).toFixed(2)}
+                h5.text-muted.d-inline-block
+                  del $#{product.price.toFixed(2)}
+              else
+                h3 $#{product.price.toFixed(2)}
+            
+            // Description
+            .mb-4
+              h5.font-weight-bold Mô tả sản phẩm
+              p.text-muted= product.description
+            
+            // Features
+            // Features
+            .mb-4
+              h5.font-weight-bold Tính năng nổi bật
+              ul.text-muted
+                each feature in product.features
+                  li= feature
+            
+            // Stock & Quantity
+            .row.mb-4
+              .col-md-6
+                p.mb-1
+                  strong Tồn kho: 
+                  span.text-success #{product.stock} sản phẩm
+              
+              .col-md-6
+                .form-group.mb-0
+                  label.font-weight-bold.mb-2 Số lượng:
+                  .input-group(style="width: 140px;")
+                    .input-group-prepend
+                      button.btn.btn-outline-secondary(type="button") -
+                    input.form-control.text-center(type="number" value="1" min="1" max=product.stock)
+                    .input-group-append
+                      button.btn.btn-outline-secondary(type="button") +
+            
+            // Action Buttons
+            .mb-3
+              button.btn.btn-primary.btn-lg.mr-2.mb-2
+                i.mr-2 🛒
+                | Thêm vào giỏ hàng
+              button.btn.btn-outline-primary.btn-lg.mb-2
+                i.mr-2 ⚡
+                | Mua ngay
+
+    // Product Tabs
+    ul.nav.nav-tabs.mb-3#productTabs
+      li.nav-item
+        a.nav-link.active#specs-tab(data-toggle="tab" href="#specs") Thông số kỹ thuật
+      li.nav-item
+        a.nav-link#reviews-tab(data-toggle="tab" href="#reviews") Đánh giá (16)
+      li.nav-item
+        a.nav-link#warranty-tab(data-toggle="tab" href="#warranty") Bảo hành
+    
+    .tab-content.mb-5
+      // Specifications Tab
+      .tab-pane.fade.show.active#specs
+        .card
+          .card-body
+            .row
+              .col-md-6
+                table.table.table-bordered.table-striped
+                  tbody
+                    tr
+                      th(width="40%") Thương hiệu
+                      td #{product.brand}
+                    tr
+                      th Công suất làm lạnh
+                      td 9000 BTU
+                    tr
+                      th Công nghệ
+                      td Inverter
+                    tr
+                      th Diện tích phòng
+                      td 15-20m²
+                    tr
+                      th Bảo hành
+                      td 12 tháng chính hãng
+              
+              .col-md-6
+                table.table.table-bordered.table-striped
+                  tbody
+                    tr
+                      th(width="40%") Khối lượng
+                      td 10.5 kg
+                    tr
+                      th Kích thước
+                      td 80 x 28 x 20 cm
+                    tr
+                      th Gas làm lạnh
+                      td R32 (thân thiện môi trường)
+                    tr
+                      th Độ ồn
+                      td 25-40 dB
+                    tr
+                      th Xuất xứ
+                      td Nhật Bản
+      
+      // Reviews Tab
+      .tab-pane.fade#reviews
+        .card
+          .card-body
+            .d-flex.justify-content-between.mb-4
+              h5 Đánh giá từ khách hàng
+              button.btn.btn-outline-primary Viết đánh giá
+            
+            // Review 1
+            .media.mb-4.pb-3.border-bottom
+              img.mr-3.rounded-circle(src="https://via.placeholder.com/50" alt="Avatar" width="50" height="50")
+              .media-body
+                h6.mt-0 Nguyễn Văn A
+                div.mb-1
+                  i.text-warning ★
+                  i.text-warning ★
+                  i.text-warning ★
+                  i.text-warning ★
+                  i.text-warning ★
+                p Sản phẩm rất tốt, làm mát nhanh và tiết kiệm điện. Đặc biệt là rất êm, không gây tiếng ồn khi hoạt động.
+                small.text-muted 15/04/2025
+            
+            // Review 2
+            .media.mb-4.pb-3.border-bottom
+              img.mr-3.rounded-circle(src="https://via.placeholder.com/50" alt="Avatar" width="50" height="50")
+              .media-body
+                h6.mt-0 Trần Thị B
+                div.mb-1
+                  i.text-warning ★
+                  i.text-warning ★
+                  i.text-warning ★
+                  i.text-warning ★
+                  i.text-warning ☆
+                p Thiết kế đẹp, lắp đặt dễ dàng. Nhân viên giao hàng và lắp đặt nhiệt tình. Tuy nhiên điều khiển từ xa hơi nhạy cảm.
+                small.text-muted 10/04/2025
+      
+      // Warranty Tab
+      .tab-pane.fade#warranty
+        .card
+          .card-body
+            h5.font-weight-bold.mb-3 Chính sách bảo hành
+            p #{product.warranty}
+            
+            h6.font-weight-bold.mt-4.mb-2 Điều kiện bảo hành:
+            ul.mb-4
+              li Sản phẩm còn trong thời gian bảo hành
+              li Tem bảo hành, mã sản phẩm còn nguyên vẹn
+              li Sản phẩm lỗi do nhà sản xuất
+            
+            h6.font-weight-bold.mb-2 Không bảo hành trong các trường hợp:
+            ul
+              li Sản phẩm hết thời hạn bảo hành
+              li Sản phẩm bị tác động bởi người dùng: va đập, trầy xước, vỡ
+              li Sản phẩm bị hư hỏng do thiên tai, hỏa hoạn
+              li Sản phẩm đã bị can thiệp, sửa chữa bởi đơn vị không được ủy quyền
+
+    // Related Products
+    h3.mb-4 Sản phẩm tương tự
+    .row
+      - const relatedProducts = [{ name: 'Điều hòa Samsung', price: 950 }, { name: 'Điều hòa LG', price: 850, discount: 950 }, { name: 'Điều hòa Panasonic', price: 1050 }, { name: 'Điều hòa Mitsubishi', price: 1150, discount: 1350 }]
+      each product, index in relatedProducts
+        .col-md-3.col-6.mb-4
+          .card.h-100
+            .position-relative
+              if product.discount
+                .position-absolute.p-2
+                  span.badge.badge-danger -#{Math.round((1 - product.price/product.discount) * 100)}%
+              img.card-img-top.p-3(src="https://via.placeholder.com/300" alt=product.name)
+            
+            .card-body
+              h5.card-title= product.name
+              .mb-2
+                if product.discount
+                  span.text-danger.font-weight-bold.mr-2 $#{product.price}
+                  del.text-muted $#{product.discount}
+                else
+                  span.font-weight-bold $#{product.price}
+              
+              div
+                i.text-warning ★
+                i.text-warning ★
+                i.text-warning ★
+                i.text-warning ★
+                i.text-warning ☆
+            
+            .card-footer.bg-white.border-top-0
+              a.btn.btn-sm.btn-outline-primary.btn-block(href="#") Xem chi tiết
+
+  script.
+    $(document).ready(function() {
+      // Basic tab functionality provided by Bootstrap
+      $('#productTabs a').on('click', function (e) {
+        e.preventDefault()
+        $(this).tab('show')
+      })
+      
+      // Quantity buttons
+      $('.input-group-prepend button').click(function() {
+        var input = $(this).closest('.input-group').find('input');
+        var value = parseInt(input.val());
+        if (value > 1) {
+          input.val(value - 1);
+        }
+      });
+      
+      $('.input-group-append button').click(function() {
+        var input = $(this).closest('.input-group').find('input');
+        var value = parseInt(input.val());
+        var max = parseInt(input.attr('max'));
+        if (value < max) {
+          input.val(value + 1);
+        }
+      });
+    });

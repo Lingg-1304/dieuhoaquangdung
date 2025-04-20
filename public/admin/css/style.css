@@ -1,0 +1,110 @@
+/* Define color variables for easy customization */
+:root {
+  --primary-color: #007bff; /* Blue for active states and accents */
+  --secondary-color: #6c757d; /* Gray for inactive text */
+  --background-color: #f8f9fa; /* Light gray for sidebar background */
+  --active-bg: #007bff; /* Background for active links */
+  --active-text: #ffffff; /* Text color for active links */
+  --hover-bg: #e9ecef; /* Background for hover state */
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+/* Sidebar styles */
+.sider-admin {
+  background-color: var(--background-color);
+  box-shadow: var(--shadow);
+}
+
+/* Header styles */
+.sider-admin h5 {
+  color: var(--primary-color);
+}
+
+/* Navigation link styles */
+.sider-admin .nav-link {
+  color: var(--secondary-color);
+  transition: all 0.2s ease;
+}
+
+/* Hover state for non-active links */
+.sider-admin .nav-link:not(.active):hover {
+  background-color: var(--hover-bg);
+  color: var(--primary-color);
+}
+
+/* Active link styles */
+.sider-admin .nav-link.active {
+  background-color: var(--active-bg);
+  color: var(--active-text);
+  font-weight: bold;
+}
+
+/* Icon styles for active links */
+.sider-admin .nav-link.active i {
+  color: var(--active-text);
+}
+
+/* Ensure icons align nicely */
+.sider-admin .nav-link i {
+  color: var(--secondary-color);
+  transition: color 0.2s ease;
+}
+
+/* Reuse color variables for consistency with sidebar */
+:root {
+  --primary-color: #007bff; /* Blue for accents and active states */
+  --secondary-color: #6c757d; /* Gray for secondary elements */
+  --background-color: #212529; /* Dark background for navbar */
+  --text-color: #ffffff; /* White text for navbar */
+  --hover-bg: #343a40; /* Darker gray for hover */
+  --shadow: 0 2px 4px rgba(255, 255, 255, 0.1); /* Subtle shadow */
+}
+
+/* Navbar styles */
+.header-admin {
+  background-color: var(--background-color);
+  box-shadow: var(--shadow);
+}
+
+/* Brand text */
+.header-admin .navbar-brand {
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+.header-admin .navbar-brand:hover {
+  color: var(--primary-color);
+}
+
+/* Toggle button */
+.header-admin .btn-outline-primary {
+  color: var(--text-color);
+  border-color: var(--primary-color);
+  transition: all 0.2s ease;
+}
+
+.header-admin .btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+}
+
+/* Nav link styles */
+.header-admin .nav-link {
+  color: var(--text-color);
+  transition: all 0.2s ease;
+}
+
+.header-admin .nav-link:hover {
+  background-color: var(--hover-bg);
+  color: var(--primary-color);
+}
+
+/* Icon alignment */
+.header-admin .nav-link i {
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+.header-admin .nav-link:hover i {
+  color: var(--primary-color);
+}

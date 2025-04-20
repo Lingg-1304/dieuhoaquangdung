@@ -1,0 +1,166 @@
+extends ../../layouts/default.pug
+
+block main
+  //- // Notifications
+  if success && success.length
+    each msg in success
+      .alert.alert-success.alert-dismissible.fade.show.shadow-sm.border-left.border-success.border-4.rounded-0.mb-3(role="alert")
+        .d-flex.align-items-center
+          i.fas.fa-check-circle.mr-3.text-success.fa-lg
+          div= msg
+        button.close(type="button", data-dismiss="alert", aria-label="Close")
+          span(aria-hidden="true") &times;
+
+  if error && error.length
+    each msg in error
+      .alert.alert-danger.alert-dismissible.fade.show.shadow-sm.border-left.border-danger.border-4.rounded-0.mb-3(role="alert")
+        .d-flex.align-items-center
+          i.fas.fa-exclamation-circle.mr-3.text-danger.fa-lg
+          div= msg
+        button.close(type="button", data-dismiss="alert", aria-label="Close")
+          span(aria-hidden="true") &times;
+  .container.py-4
+    //- // Page Header
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.h2.mb-0 Chỉnh sửa sản phẩm
+      a.btn.btn-outline-danger(href="/admin/products")
+        i.fas.fa-arrow-left.mr-2
+        | Quay lại
+    
+    //- // Product Edit Form
+    .card.shadow-sm
+      .card-body
+        form(method="POST", action=`/admin/products/edit/${product._id}`, enctype="multipart/form-data")
+          .row
+            .col-md-8
+              //- // Basic Information
+              .form-group
+                label.font-weight-bold(for="title") Tên sản phẩm
+                input#title.form-control(
+                  type="text", 
+                  name="title", 
+                  value=product.title, 
+                  required
+                )
+
+              .form-group
+                label.font-weight-bold(for="description") Mô tả
+                textarea#description.form-control(name="description", rows="4") #{product.description}
+
+              .form-group
+                label.font-weight-bold(for="features") Tính năng nổi bặt
+                textarea#description.form-control(name="features", rows="4") #{product.features}
+
+              .form-group
+                label.font-weight-bold(for="warranty") Chế độ bảo hành
+                textarea#description.form-control(name="warranty", rows="4") #{product.warranty}
+
+              //- // Price and Stock Information
+              .row
+                .col-md-4
+                  .form-group
+                    label.font-weight-bold(for="price") Giá ($)
+                    .input-group
+                      .input-group-prepend
+                        span.input-group-text $
+                      input#price.form-control(
+                        type="number", 
+                        name="price", 
+                        value=product.price,
+                        step="0.01", 
+                        min="0", 
+                        required
+                      )
+                
+                .col-md-4
+                  .form-group
+                    label.font-weight-bold(for="discountPercentage") Giảm giá (%)
+                    .input-group
+                      input#discountPercentage.form-control(
+                        type="number", 
+                        name="discountPercentage", 
+                        value=product.discountPercentage,
+                        step="0.01", 
+                        min="0", 
+                        max="100"
+                      )
+                      .input-group-append
+                        span.input-group-text %
+                
+                .col-md-4
+                  .form-group
+                    label.font-weight-bold(for="stock") Tồn kho
+                    input#stock.form-control(
+                      type="number", 
+                      name="stock", 
+                      value=product.stock, 
+                      min="0", 
+                      required
+                    )
+              
+              //- // Product Status and Position
+              .row
+                .col-md-6
+                  .form-group
+                    label.font-weight-bold(for="position") Vị trí hiển thị
+                    input#position.form-control(
+                      type="number", 
+                      name="position", 
+                      value=product.position || 1, 
+                      min="1"
+                    )
+                
+                .col-md-6
+                  .form-group
+                    label.font-weight-bold Trạng thái
+                    .d-flex.mt-2
+                      .custom-control.custom-radio.mr-4
+                        input.custom-control-input#active(
+                          type="radio", 
+                          name="status", 
+                          value="active", 
+                          checked=product.status === 'active'
+                        )
+                        label.custom-control-label(for="active") Còn bán
+                      .custom-control.custom-radio
+                        input.custom-control-input#inactive(
+                          type="radio", 
+                          name="status", 
+                          value="inactive", 
+                          checked=product.status === 'inactive'
+                        )
+                        label.custom-control-label(for="inactive") Dừng bán
+            
+            //- // Product Image
+            .col-md-4
+              .form-group
+                label.font-weight-bold(for="thumbnail") Ảnh sản phẩm
+                .custom-file.mb-3
+                  input#thumbnail.custom-file-input(
+                    type="file", 
+                    name="thumbnail",
+                    accept="image/*"
+                  )
+                  label.custom-file-label(for="thumbnail") Chọn tệp ảnh
+                
+                if product.thumbnail
+                  .card.mt-3
+                    .card-body.text-center.p-3
+                      img.img-fluid.mb-2(src=product.thumbnail, alt=product.title, style="max-height: 200px;")
+                      p.text-muted.small.mb-0 Ảnh hiện tại
+          
+          hr.my-4
+          
+          //- // Form Actions
+          .d-flex.justify-content-end
+            a.btn.btn-light.mr-2(href="/admin/products") Huỷ bỏ
+            button.btn.btn-success(type="submit")
+              i.far.fa-save.mr-1
+              | Lưu thay đổi
+  script.
+    //- // Update file input label with file name
+    document.querySelector('.custom-file-input').addEventListener('change', function(e) {
+      let fileName = e.target.files[0]?.name || 'Chọn tệp ảnh';
+      const label = e.target.nextElementSibling;
+      label.textContent = fileName;
+    });

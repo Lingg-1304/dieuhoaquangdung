@@ -1,0 +1,227 @@
+extends ../../layouts/default.pug
+
+block main
+  // Hero Banner
+  section.banner-section
+    .container-fluid.px-0
+      #homeBanner.carousel.slide(data-ride="carousel")
+        ol.carousel-indicators
+          li.active(data-target="#homeBanner" data-slide-to="0")
+          li(data-target="#homeBanner" data-slide-to="1")
+          li(data-target="#homeBanner" data-slide-to="2")
+        
+        .carousel-inner
+          .carousel-item.active
+            img.d-block.w-100(src="https://karofivietnam.vn/wp-content/uploads/2022/05/karofivietnam.vn-banner-dieu-hoa-karofi-2.jpg" alt="Banner 1")
+            .carousel-caption
+              h2.display-4 Điều hòa cao cấp
+              p.lead Công nghệ Inverter tiết kiệm năng lượng
+              a.btn.btn-primary.btn-lg(href="/products") Mua ngay
+          
+          .carousel-item
+            img.d-block.w-100(src="https://dieuhoadidong.info/wp-content/files/Banner%20web%20%C4%91i%E1%BB%81u%20ho%C3%A0%20di%20%C4%91%E1%BB%99ng%203.jpg" alt="Banner 2")
+            .carousel-caption
+              h2.display-4 Giảm đến 30%
+              p.lead Chương trình khuyến mãi mùa hè
+              a.btn.btn-danger.btn-lg(href="/products/sale") Xem ưu đãi
+          
+          .carousel-item
+            img.d-block.w-100(src="https://www.vlance.vn/uploads/portfolio/view/6dece7fdab9649807b7084cdcfccbc311d8863bb1.png" alt="Banner 3")
+            .carousel-caption
+              h2.display-4 Dịch vụ lắp đặt miễn phí
+              p.lead Đội ngũ kỹ thuật chuyên nghiệp
+              a.btn.btn-success.btn-lg(href="/services") Tìm hiểu thêm
+        
+        a.carousel-control-prev(href="#homeBanner" role="button" data-slide="prev")
+          span.carousel-control-prev-icon(aria-hidden="true")
+          span.sr-only Trước
+        
+        a.carousel-control-next(href="#homeBanner" role="button" data-slide="next")
+          span.carousel-control-next-icon(aria-hidden="true")
+          span.sr-only Tiếp
+
+  // Category Section
+  section.category-section.py-5.bg-light
+    .container
+      h2.text-center.mb-4 Danh mục sản phẩm
+      .row
+        - const categories = [{ name: 'Điều hòa dân dụng', icon: 'fa-snowflake', color: '#4A89DC' }, { name: 'Điều hòa công nghiệp', icon: 'fa-industry', color: '#967ADC' }, { name: 'Điều hòa âm trần', icon: 'fa-square', color: '#D770AD' }, { name: 'Phụ kiện', icon: 'fa-tools', color: '#F6BB42' }]
+        each category in categories
+          .col-md-3.col-6.mb-4
+            a.text-decoration-none(href="/products/category/" + category.name.toLowerCase().replace(/\s+/g, '-'))
+              .card.border-0.text-center.h-100
+                .card-body.py-4
+                  .mb-3
+                    .category-icon.mx-auto.rounded-circle.d-flex.align-items-center.justify-content-center(style=`background-color: ${category.color}`)
+                      i.fas.fa-2x.text-white(class=category.icon)
+                  h5.card-title= category.name
+                  p.card-text.text-muted Khám phá sản phẩm
+
+  // Featured Products
+  section.featured-section.py-5
+    .container
+      .d-flex.justify-content-between.align-items-center.mb-4
+        h2 Sản phẩm nổi bật
+        a.btn.btn-outline-primary(href="/products") Xem tất cả
+      
+      .row
+        - const featuredProducts = [{ title: 'Điều hòa Dakin', price: 1000, discountPercentage: 11, thumbnail: '/uploads/1745129911532-Screenshot 2025-04-20 131824.png' }, { title: 'Điều hòa Samsung', price: 950, discountPercentage: 0, thumbnail: 'https://via.placeholder.com/300' }, { title: 'Điều hòa LG Inverter', price: 1200, discountPercentage: 15, thumbnail: 'https://via.placeholder.com/300' }, { title: 'Điều hòa Panasonic', price: 1050, discountPercentage: 8, thumbnail: 'https://via.placeholder.com/300' }]
+        each product in featuredProducts
+          .col-lg-3.col-md-4.col-6.mb-4
+            .card.h-100
+              .position-relative
+                if product.discountPercentage > 0
+                  span.badge.badge-danger.position-absolute.m-2 -#{Math.round(product.discountPercentage)}%
+                img.card-img-top.p-3(src=product.thumbnail alt=product.title)
+              .card-body.pb-0
+                h5.card-title= product.title
+                .mb-2
+                  if product.discountPercentage > 0
+                    span.text-danger.font-weight-bold.mr-2 $#{(product.price * (1 - product.discountPercentage/100)).toFixed(2)}
+                    del.text-muted $#{product.price.toFixed(2)}
+                  else
+                    span.font-weight-bold $#{product.price.toFixed(2)}
+                .mb-2
+                  - for (let i = 0; i < 5; i++)
+                    if i < 4
+                      i.text-warning ★
+                    else
+                      i.text-warning ☆
+              .card-footer.bg-white.border-top-0.pt-0
+                .d-grid
+                  a.btn.btn-sm.btn-outline-primary.btn-block(href=`/products/${product.title.toLowerCase().replace(/\s+/g, '-')}`) Xem chi tiết
+
+  // Benefits Section
+  section.benefits-section.py-5.bg-light
+    .container
+      h2.text-center.mb-5 Lý do chọn chúng tôi
+      .row.text-center
+        - const benefits = [{ icon: 'fa-medal', title: 'Sản phẩm chính hãng', desc: 'Cam kết hàng chính hãng, bảo hành dài hạn' }, { icon: 'fa-shipping-fast', title: 'Giao hàng toàn quốc', desc: 'Vận chuyển nhanh chóng, đúng tiến độ' }, { icon: 'fa-tools', title: 'Lắp đặt chuyên nghiệp', desc: 'Đội ngũ kỹ thuật giàu kinh nghiệm' }, { icon: 'fa-headset', title: 'Hỗ trợ 24/7', desc: 'Luôn sẵn sàng giải đáp mọi thắc mắc' }]
+        each benefit in benefits
+          .col-md-3.col-6.mb-4
+            .p-3
+              .mb-3
+                i.fas.fa-3x.text-primary(class=benefit.icon)
+              h5= benefit.title
+              p.text-muted= benefit.desc
+
+  // New Arrivals
+  section.new-arrivals-section.py-5
+    .container
+      .d-flex.justify-content-between.align-items-center.mb-4
+        h2 Sản phẩm mới
+        a.btn.btn-outline-primary(href="/products/new") Xem tất cả
+      
+      .row
+        - const newProducts = [{ title: 'Điều hòa Mitsubishi', price: 1150, discountPercentage: 0, thumbnail: 'https://via.placeholder.com/300' }, { title: 'Điều hòa Gree', price: 880, discountPercentage: 5, thumbnail: 'https://via.placeholder.com/300' }, { title: 'Điều hòa Toshiba', price: 950, discountPercentage: 0, thumbnail: 'https://via.placeholder.com/300' }, { title: 'Điều hòa Casper', price: 750, discountPercentage: 10, thumbnail: 'https://via.placeholder.com/300' }]
+        each product in newProducts
+          .col-lg-3.col-md-4.col-6.mb-4
+            .card.h-100
+              .position-relative
+                span.badge.badge-success.position-absolute.m-2 Mới
+                if product.discountPercentage > 0
+                  span.badge.badge-danger.position-absolute.m-2.ml-5 -#{Math.round(product.discountPercentage)}%
+                img.card-img-top.p-3(src=product.thumbnail alt=product.title)
+              .card-body.pb-0
+                h5.card-title= product.title
+                .mb-2
+                  if product.discountPercentage > 0
+                    span.text-danger.font-weight-bold.mr-2 $#{(product.price * (1 - product.discountPercentage/100)).toFixed(2)}
+                    del.text-muted $#{product.price.toFixed(2)}
+                  else
+                    span.font-weight-bold $#{product.price.toFixed(2)}
+                .mb-2
+                  - for (let i = 0; i < 5; i++)
+                    if i < 4
+                      i.text-warning ★
+                    else
+                      i.text-warning ☆
+              .card-footer.bg-white.border-top-0.pt-0
+                .d-grid
+                  a.btn.btn-sm.btn-outline-primary.btn-block(href=`/products/${product.title.toLowerCase().replace(/\s+/g, '-')}`) Xem chi tiết
+
+  // Testimonials
+  section.testimonials-section.py-5.bg-light
+    .container
+      h2.text-center.mb-5 Khách hàng nói gì về chúng tôi
+      .row.justify-content-center
+        .col-lg-8
+          #testimonialCarousel.carousel.slide(data-ride="carousel")
+            .carousel-inner
+              - const testimonials = [{ name: 'Nguyễn Văn A', role: 'Khách hàng ở Hà Nội', text: 'Sản phẩm chất lượng cao, dịch vụ lắp đặt chuyên nghiệp. Tôi rất hài lòng với điều hòa Dakin đã mua từ cửa hàng.' }, { name: 'Trần Thị B', role: 'Khách hàng ở TP. HCM', text: 'Điều hòa hoạt động rất êm, tiết kiệm điện đúng như quảng cáo. Nhân viên tư vấn nhiệt tình, hỗ trợ kỹ thuật nhanh chóng.' }, { name: 'Lê Văn C', role: 'Chủ căn hộ chung cư', text: 'Đã mua và lắp đặt 3 điều hòa cho căn hộ. Chất lượng sản phẩm tuyệt vời, giá cả hợp lý. Sẽ tiếp tục ủng hộ cửa hàng.' }]
+              each testimonial, index in testimonials
+                .carousel-item(class=index === 0 ? 'active' : '')
+                  .card.border-0.text-center
+                    .card-body.p-5
+                      i.fas.fa-quote-left.fa-3x.text-muted.mb-3
+                      p.lead= testimonial.text
+                      .mt-4
+                        h5.mb-1= testimonial.name
+                        p.text-muted= testimonial.role
+            
+            ol.carousel-indicators.position-relative.mt-3
+              each testimonial, index in testimonials
+                li(data-target="#testimonialCarousel" data-slide-to=index class=index === 0 ? 'active' : '')
+
+  // Brands
+  section.brands-section.py-5
+    .container
+      h2.text-center.mb-5 Thương hiệu nổi tiếng
+      .row.align-items-center.text-center
+        - const brands = ['Dakin', 'Panasonic', 'Samsung', 'LG', 'Mitsubishi', 'Toshiba']
+        each brand in brands
+          .col-md-2.col-4.mb-4
+            img.img-fluid(src="https://via.placeholder.com/150x80?text=" + brand alt=brand)
+
+  // Blog Posts
+  section.blog-section.py-5.bg-light
+    .container
+      .d-flex.justify-content-between.align-items-center.mb-4
+        h2 Tin tức & Mẹo hay
+        a.btn.btn-outline-primary(href="/blog") Xem tất cả
+      
+      .row
+        - const blogs = [{ title: 'Cách lựa chọn điều hòa phù hợp với diện tích phòng', date: '15/04/2025', image: 'https://via.placeholder.com/400x250' }, { title: 'Mẹo tiết kiệm điện khi sử dụng điều hòa mùa hè', date: '10/04/2025', image: 'https://via.placeholder.com/400x250' }, { title: 'Hướng dẫn vệ sinh điều hòa đúng cách', date: '05/04/2025', image: 'https://via.placeholder.com/400x250' }]
+        each blog in blogs
+          .col-md-4.mb-4
+            .card.h-100
+              img.card-img-top(src=blog.image alt=blog.title)
+              .card-body
+                h5.card-title= blog.title
+                p.card-text.text-muted
+                  small
+                    i.far.fa-calendar-alt.mr-2
+                    = blog.date
+                p.card-text Những thông tin hữu ích giúp bạn sử dụng điều hòa hiệu quả và tiết kiệm hơn.
+              .card-footer.bg-white.border-top-0
+                a.btn.btn-link.p-0(href="/blog/" + blog.title.toLowerCase().replace(/\s+/g, '-')) Đọc tiếp →
+
+  // Newsletter
+  section.newsletter-section.py-5.bg-primary.text-white
+    .container
+      .row.align-items-center
+        .col-md-6.mb-4.mb-md-0
+          h3 Đăng ký nhận tin
+          p Cập nhật thông tin khuyến mãi và sản phẩm mới nhất
+        
+        .col-md-6
+          form.input-group
+            input.form-control(type="email" placeholder="Email của bạn")
+            .input-group-append
+              button.btn.btn-light(type="submit") Đăng ký
+
+    script.
+        $(document).ready(function() {
+        // Initialize carousels
+        $('.carousel').carousel({
+            interval: 5000
+        });
+        });
+    
+    style. 
+        #homeBanner img {
+            max-height: 400px; /* Hoặc chiều cao bạn muốn, ví dụ 300px, 500px */
+            object-fit: cover;
+        }
+
+    
