@@ -10,7 +10,7 @@ const productSchema = new mongoose.Schema(
     features: {
       type: [String],
       required: true,
-    },
+    }, // Tính năng nổi bật
     warranty: String, // bảo hành
     slug: {
       type: String,
