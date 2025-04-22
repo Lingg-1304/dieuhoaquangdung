@@ -148,7 +148,15 @@ block main
                     .card-body.text-center.p-3
                       img.img-fluid.mb-2(src=product.thumbnail, alt=product.title, style="max-height: 200px;")
                       p.text-muted.small.mb-0 Ảnh hiện tại
-          
+              .form-container#form-brand
+                label.font-weight-bold(for="brand") Thương hiệu
+                select#brand.form-control(name="brand")
+                  option(value="" disabled selected) #{product.brand}
+                  option(value="Daikin") Daikin
+                  option(value="Panasonic") Panasonic
+                  option(value="LG") LG
+                  option(value="Samsung") Samsung
+                  option(value="Mitsubishi") Mitsubishi
           hr.my-4
           
           //- // Form Actions

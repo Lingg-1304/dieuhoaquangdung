@@ -1,30 +1,53 @@
 const Product = require("../../models/product-model");
-
+const sortOption = require("../../helpers/sortOption");
+const search = require("../../helpers/search");
 // [GET] /products
 module.exports.getProducts = async (req, res) => {
   // console.log(req.query.sort);
-
-  let sortOption;
-  switch (req.query.sort) {
-    case "price_asc":
-      sortOption = { price: 1 };
-      break;
-    case "price_desc":
-      sortOption = { price: -1 };
-      break;
-    case "popular":
-      sortOption = { stock: -1 }; // hoặc trường viewCount nếu có
-      break;
-    case "newest" || undefined:
-      sortOption = { position: -1 };
-      break;
-  }
-
-  const products = await Product.find({
+  let keyword = req.query.keyword;
+  let find = {
     deleted: false,
     status: "active",
-  }).sort(sortOption);
+  };
 
+  // Thanh tìm kiếm
+  find = search(find, keyword);
+
+  //Thanh sắp xếp
+  let sort;
+  if (sortOption(req)) {
+    if (sortOption(req).position && sortOption(req).position === -1) {
+      sort = "Mới nhất";
+    } else if (sortOption(req).price && sortOption(req).price === 1) {
+      sort = "Giá: Thấp đến cao";
+    } else if (sortOption(req).price && sortOption(req).price === -1) {
+      sort = "Giá: Cao đến thấp";
+    } else if (sortOption(req).stock && sortOption(req).stock === 1) {
+      sort = "Phổ biến nhất";
+    }
+  }
+
+  //Thanh hãng điều hòa
+  console.log(req.query.brand);
+  const selectBrand = req.query.brand;
+  if (selectBrand && selectBrand != "all") {
+    find.brand = selectBrand;
+  }
+
+  // Phân trang ?page=
+  const page = parseInt(req.query.page) || 1;
+  const limit = 6;
+  const skip = (page - 1) * limit;
+
+  // Lọc sản phẩm
+  const [products, total] = await Promise.all([
+    Product.find(find).skip(skip).limit(limit).sort(sortOption(req)),
+    Product.countDocuments(find),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  // Giảm giá
   const newProducts = products.map((product) => {
     product.priceNew = (
       (product.price * (100 - product.discountPercentage)) /
@@ -33,11 +56,14 @@ module.exports.getProducts = async (req, res) => {
     return product;
   });
 
-  // console.log(newProducts);
-
   res.render("client/pages/products/index", {
     title: "Products",
     products: newProducts,
+    keyword,
+    sort,
+    totalPages,
+    page,
+    brand: selectBrand,
   });
 };
 

@@ -1,7 +1,8 @@
+// Status
 const formStatus = document.querySelector("#form-status");
-
 if (formStatus) {
   formStatus.addEventListener("click", function (e) {
+    // console.log(formStatus);
     if (e.target.tagName === "BUTTON" && e.target.name === "status") {
       e.preventDefault();
 
@@ -28,8 +29,8 @@ if (formStatus) {
   });
 }
 
+// Thanh search
 const formSearch = document.querySelector("#form-search");
-
 if (formSearch) {
   let url = new URL(window.location.href);
   console.log(url);
@@ -44,8 +45,8 @@ if (formSearch) {
   });
 }
 
+// Clear search
 const clearBtn = document.getElementById("clear-keyword");
-
 if (clearBtn) {
   clearBtn.addEventListener("click", () => {
     const url = new URL(window.location.href);
@@ -55,3 +56,30 @@ if (clearBtn) {
     window.location.href = url.href;
   });
 }
+
+// Thanh sắp xếp sản phẩm
+document.addEventListener("DOMContentLoaded", function () {
+  const sortSelect = document.querySelector("#sort");
+
+  if (sortSelect) {
+    sortSelect.addEventListener("change", function () {
+      const sortValue = this.value;
+      const url = new URL(window.location.href);
+
+      // Nếu là "-- Chọn hãng điều hòa --" (giá trị rỗng), thì xóa truy vấn brand
+      if (!sortValue) {
+        url.searchParams.delete("sort");
+      } else {
+        url.searchParams.set("sort", sortValue);
+      }
+
+      // Reset phân trang nếu có
+      if (url.searchParams.has("page")) {
+        url.searchParams.set("page", "1");
+      }
+
+      // Chuyển trang
+      window.location.href = url.toString();
+    });
+  }
+});

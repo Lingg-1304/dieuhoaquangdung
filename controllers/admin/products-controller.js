@@ -9,9 +9,29 @@ const statusHelpers = require("../../helpers/filterStatus");
 module.exports.index = async (req, res) => {
   let keyword = req.query.keyword;
   let status = req.query.status;
+  let brand = req.query.brand;
   let find = {
     deleted: false,
   };
+
+  if (brand) {
+    find.brand = brand;
+  }
+
+  let sortOption, sort;
+  switch (req.query.sort) {
+    case "price_asc":
+      sortOption = { price: 1 };
+      sort = "1";
+      break;
+    case "price_desc":
+      sortOption = { price: -1 };
+      sort = "2";
+      break;
+    case "":
+      sortOption = { stock: -1 }; // hoặc trường viewCount nếu có
+      break;
+  }
 
   // Phân trang ?page=
   const page = parseInt(req.query.page) || 1;
@@ -24,14 +44,16 @@ module.exports.index = async (req, res) => {
   }
 
   const [products, total] = await Promise.all([
-    Product.find(find).skip(skip).limit(limit).sort({ position: -1 }),
+    Product.find(find).skip(skip).limit(limit).sort(sortOption),
     Product.countDocuments(find),
   ]);
 
   const totalPages = Math.ceil(total / limit);
-
+  // console.log(sortOption);
   res.render(`admin/pages/products/index`, {
     title: "Admin products",
+    sort,
+    brand,
     products,
     currentPath: req.path,
     keyword,
@@ -53,7 +75,6 @@ module.exports.createPost = async (req, res) => {
 
   const products = await Product.find({ deleted: false });
   product.position = products.length;
-  product.thumbnail = `/uploads/${req.file.filename}`;
   product.features = product.features
     .split("\n")
     .map((f) => f.trim())
@@ -101,12 +122,7 @@ module.exports.editGet = async (req, res) => {
 };
 module.exports.editPost = async (req, res) => {
   const id = req.params.id;
-  const product = await Product.findOne({ _id: id });
   const item = req.body;
-  item.thumbnail = req.file
-    ? `/uploads/${req.file.filename}`
-    : product.thumbnail;
-
   item.features = item.features
     .split("\n")
     .map((f) => f.trim())

@@ -1,0 +1,16 @@
+mixin search(keyword)
+  form#form-search
+    .input-group
+      input.form-control(
+        type="text",
+        name="keyword",
+        placeholder="Tìm theo tên...",
+        value=keyword || '',
+        style="background-color: #fff;"
+      )
+      .input-group-append
+        button.btn.btn-primary(type="submit") Tìm
+        if keyword
+          button.btn.btn-outline-danger.ml-2(type="button", id="clear-keyword", title="Xóa tìm kiếm")
+            i.fas.fa-times
+            | Xóa

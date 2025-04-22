@@ -1,0 +1,18 @@
+mixin alert(success,error)
+  if success && success.length
+    each msg in success
+      .alert.alert-success.alert-dismissible.fade.show.shadow-sm.border-left.border-success.border-4.rounded-0.mb-3(role="alert")
+        .d-flex.align-items-center
+          i.fas.fa-check-circle.mr-3.text-success.fa-lg
+          div= msg
+        button.close(type="button", data-dismiss="alert", aria-label="Close")
+          span(aria-hidden="true") &times;
+
+  if error && error.length
+    each msg in error
+      .alert.alert-danger.alert-dismissible.fade.show.shadow-sm.border-left.border-danger.border-4.rounded-0.mb-3(role="alert")
+        .d-flex.align-items-center
+          i.fas.fa-exclamation-circle.mr-3.text-danger.fa-lg
+          div= msg
+        button.close(type="button", data-dismiss="alert", aria-label="Close")
+          span(aria-hidden="true") &times;
