@@ -69,14 +69,13 @@ block main
         
         //- Mua hàng
         .product-actions
-          .form-group
+          .form-group.mb-3
             label(for="quantity") Số lượng:
-            .input-group.w-25
-              .input-group-prepend
-                button.btn.btn-outline-secondary(type="button", onclick="decreaseQuantity()") -
-              input#quantity.form-control.text-center(type="number", value="1", min="1", max=product.stock)
-              .input-group-append
-                button.btn.btn-outline-secondary(type="button", onclick="increaseQuantity()") +
+            .d-flex.align-items-center.gap-2(style="max-width: 200px;")
+              button.btn.btn-outline-secondary(type="button", onclick="decreaseQuantity()") -
+              input#quantity.form-control.text-center(type="number", value="1", min="1", max=product.stock, style="width: 70px;")
+              button.btn.btn-outline-secondary(type="button", onclick="increaseQuantity()") +
+
           
           .btn-group.mt-3
             button.btn.btn-primary.btn-lg
@@ -119,7 +118,7 @@ block main
                       td= product.stock > 0 ? "Còn hàng" : "Hết hàng"
                     tr
                       th(scope="row") SKU
-                      td= product.slug
+                      td= product.title
           
           .tab-pane.fade#reviews(role="tabpanel")
             .card.border-0
