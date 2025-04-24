@@ -51,7 +51,7 @@ block main
           +search(keyword)
         .form-container#form-brand
           select#brand.form-control(name="brand")
-            option(value="") Chọn thương hiệu
+            option(value="" hidden) Chọn thương hiệu
             option(value="all", selected=brand === "all") Tất cả
             option(value="Daikin", selected=brand === "Daikin") Daikin
             option(value="Panasonic", selected=brand === "Panasonic") Panasonic
@@ -60,7 +60,7 @@ block main
             option(value="Mitsubishi", selected=brand === "Mitsubishi") Mitsubishi
         .form-container#form-sort
           select#sort.form-control(name="sort")
-            option(value="") Sắp xếp
+            option(value="" hidden) Sắp xếp
             option(value="price_asc", selected=sort === "1") Giá: Thấp đến cao
             option(value="price_desc", selected=sort === "2") Giá: Cao đến thấp
       .card-body.p-0

@@ -49,7 +49,7 @@ module.exports.index = async (req, res) => {
   ]);
 
   const totalPages = Math.ceil(total / limit);
-  // console.log(sortOption);
+  // console.log(products);
   res.render(`admin/pages/products/index`, {
     title: "Admin products",
     sort,
@@ -72,7 +72,9 @@ module.exports.createGet = async (req, res) => {
 };
 module.exports.createPost = async (req, res) => {
   const product = req.body;
-
+  product.newPrice = Math.round(
+    (product.price * (100 - product.discountPercentage)) / 100
+  );
   const products = await Product.find({ deleted: false });
   product.position = products.length;
   product.features = product.features
@@ -123,6 +125,9 @@ module.exports.editGet = async (req, res) => {
 module.exports.editPost = async (req, res) => {
   const id = req.params.id;
   const item = req.body;
+  item.newPrice = Math.round(
+    (item.price * (100 - item.discountPercentage)) / 100
+  );
   item.features = item.features
     .split("\n")
     .map((f) => f.trim())

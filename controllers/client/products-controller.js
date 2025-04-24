@@ -28,7 +28,7 @@ module.exports.getProducts = async (req, res) => {
   }
 
   //Thanh hãng điều hòa
-  console.log(req.query.brand);
+  // console.log(req.query.brand);
   const selectBrand = req.query.brand;
   if (selectBrand && selectBrand != "all") {
     find.brand = selectBrand;
@@ -72,13 +72,22 @@ module.exports.getDetail = async (req, res) => {
   const slug = req.params.slug;
   let find = {
     deleted: false,
-    slug,
     status: "active",
   };
+  find.slug = slug;
   const item = await Product.findOne(find);
+
+  // relatedProducts
+  const relatedProducts = await Product.find({
+    deleted: false,
+    status: "active",
+    brand: item.brand,
+  }).limit(4);
+  console.log(relatedProducts);
 
   res.render("client/pages/products/detail", {
     title: item.title,
     product: item,
+    relatedProducts,
   });
 };

@@ -14,48 +14,47 @@ block main
             p.text-muted Khám phá bộ sưu tập sản phẩm độc đáo và chất lượng cao của chúng tôi
 
       .row.mb-4
-        .col-md-6
+        .col-12.mb-3
           +search(keyword)
-        .col-md-6
-          .d-flex.justify-content-md-end.mt-3.mt-md-0
-            .form-container#form-sort
-              select#sort.form-control(name="sort")
-                option(value="" disabled selected hidden) Sắp xếp
-                option(value="", selected=sort === "Tất cả") Tất cả
-                option(value="price_asc", selected=sort === "Giá: Thấp đến cao") Giá: Thấp đến cao
-                option(value="price_desc", selected=sort === "Giá: Cao đến thấp") Giá: Cao đến thấp
-                option(value="popular", selected=sort === "Phổ biến") Phổ biến 
-                option(value="newest", selected=sort === "Mới nhất") Mới nhất
-            .d-flex.justify-content-md-end.mt-3.mt-md-0
-              .form-container#form-brand
-                select#brand.form-control(name="brand")
-                  option(value="" hidden) Chọn thương hiệu
-                  option(value="all", selected=brand === "all") Tất cả
-                  option(value="Daikin", selected=brand === "Daikin") Daikin
-                  option(value="Panasonic", selected=brand === "Panasonic") Panasonic
-                  option(value="LG", selected=brand === "LG") LG
-                  option(value="Samsung", selected=brand === "Samsung") Samsung
-                  option(value="Mitsubishi", selected=brand === "Mitsubishi") Mitsubishi
+        .col-12.col-md-6.col-lg-3.mb-3.mb-lg-0.order-md-2
+          .form-container#form-sort
+            select#sort.form-control(name="sort")
+              option(value="" disabled selected hidden) Sắp xếp
+              option(value="", selected=sort === "Tất cả") Tất cả
+              option(value="price_asc", selected=sort === "Giá: Thấp đến cao") Giá: Thấp đến cao
+              option(value="price_desc", selected=sort === "Giá: Cao đến thấp") Giá: Cao đến thấp
+              option(value="popular", selected=sort === "Phổ biến") Phổ biến 
+              option(value="newest", selected=sort === "Mới nhất") Mới nhất
+        .col-12.col-md-6.col-lg-3.mb-3.mb-lg-0.order-md-3
+          .form-container#form-brand
+            select#brand.form-control(name="brand")
+              option(value="" hidden) Chọn thương hiệu
+              option(value="all", selected=brand === "all") Tất cả
+              option(value="Daikin", selected=brand === "Daikin") Daikin
+              option(value="Panasonic", selected=brand === "Panasonic") Panasonic
+              option(value="LG", selected=brand === "LG") LG
+              option(value="Samsung", selected=brand === "Samsung") Samsung
+              option(value="Mitsubishi", selected=brand === "Mitsubishi") Mitsubishi
       .row
         each product in products
           .col-md-6.col-lg-4.mb-4
             .card.product-card.h-100.shadow-sm.border-0
               .product-badge
-                if product.discount
-                  span.badge.badge-danger -#{product.discount}%
+                if product.discountPercentage
+                  span.badge.badge-danger -#{product.discountPercentage}%
                 if product.isNew
                   span.badge.badge-success Mới
 
               .product-thumb.position-relative
                 img.card-img-top(src=product.thumbnail, alt=product.title)
-                .product-overlay
-                  .d-flex.justify-content-center
-                    a.btn.btn-sm.btn-outline-light.mx-1(href="#" title="Thêm vào giỏ")
-                      i.fa.fa-shopping-cart
-                    a.btn.btn-sm.btn-outline-light.mx-1(href="#" title="Yêu thích")
-                      i.fa.fa-heart
-                    a.btn.btn-sm.btn-outline-light.mx-1(href=`/products/${product.id}` title="Xem chi tiết")
-                      i.fa.fa-eye
+                //- .product-overlay
+                //-   .d-flex.justify-content-center
+                //-     a.btn.btn-sm.btn-outline-light.mx-1(href="#" title="Thêm vào giỏ")
+                //-       i.fa.fa-shopping-cart
+                //-     a.btn.btn-sm.btn-outline-light.mx-1(href="#" title="Yêu thích")
+                //-       i.fa.fa-heart
+                //-     a.btn.btn-sm.btn-outline-light.mx-1(href=`/products/${product.slug}` title="Xem chi tiết")
+                //-       i.fa.fa-eye
 
               .card-body
                 h5.card-title.product-title.text-truncate #{product.title}
@@ -71,8 +70,8 @@ block main
 
                 .product-price.d-flex.align-items-center
                   span.product-price-old.text-muted.mr-2
-                    del #{product.price} đ
-                  span.product-price-new.font-weight-bold.text-primary #{product.priceNew} đ
+                    del #{product.price.toLocaleString('vi-VN')} đ
+                  span.product-price-new.font-weight-bold.text-danger #{product.newPrice.toLocaleString('vi-VN')} đ
 
                 if product.description
                   p.card-text.small.text-muted.mt-2 #{product.description.substring(0, 80)}...
