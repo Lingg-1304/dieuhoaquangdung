@@ -1,6 +1,6 @@
 const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
-
+const dotenv = require("dotenv");
 cloudinary.config({
   cloud_name: "dmasiceou",
   api_key: "396294689333812",
