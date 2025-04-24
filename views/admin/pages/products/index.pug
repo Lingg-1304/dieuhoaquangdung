@@ -72,7 +72,7 @@ block main
                 th.text-center Vị trí
                 th.text-center Ảnh
                 th Tên sản phẩm
-                th.text-right Giá (USD)
+                th.text-right Giá (vnđ)
                 th.text-center Giảm giá
                 th.text-center Tồn kho
                 th.text-center Trạng thái
@@ -88,7 +88,7 @@ block main
                         a(href=item.thumbnail)  
                           img.img-thumbnail(src=item.thumbnail, alt=item.title, width="60", height="60")
                     td.font-weight-bold #{item.title}
-                    td.text-right.font-weight-bold $#{item.price}
+                    td.text-right.font-weight-bold #{item.price.toLocaleString('vi-VN')} đ
                     td.text-center 
                       if item.discountPercentage > 0
                         span.badge.badge-warning.p-2 #{item.discountPercentage}%
