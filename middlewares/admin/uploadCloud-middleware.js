@@ -1,6 +1,7 @@
 const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
 const dotenv = require("dotenv");
+dotenv.config();
 cloudinary.config({
   cloud_name: "dmasiceou",
   api_key: "396294689333812",
@@ -8,6 +9,7 @@ cloudinary.config({
 });
 
 module.exports.upload = async (req, res, next) => {
+  console.log("API secret from env:", process.env.API_cloudinary);
   if (req.file) {
     let streamUpload = (req) => {
       return new Promise((resolve, reject) => {
