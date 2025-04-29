@@ -52,7 +52,7 @@ block main
         .form-container#form-brand
           select#brand.form-control(name="brand")
             option(value="" hidden) Chọn thương hiệu
-            option(value="all", selected=brand === "all") Tất cả
+            option(value="", selected=brand === "") Tất cả
             option(value="Daikin", selected=brand === "Daikin") Daikin
             option(value="Panasonic", selected=brand === "Panasonic") Panasonic
             option(value="LG", selected=brand === "LG") LG
@@ -71,7 +71,7 @@ block main
                 th.text-center STT
                 th.text-center Vị trí
                 th.text-center Ảnh
-                th Tên sản phẩm
+                th.text-center Tên sản phẩm
                 th.text-right Giá (vnđ)
                 th.text-center Giảm giá
                 th.text-center Tồn kho
@@ -88,7 +88,7 @@ block main
                         a(href=item.thumbnail)  
                           img.img-thumbnail(src=item.thumbnail, alt=item.title, width="60", height="60")
                     td.font-weight-bold #{item.title}
-                    td.text-right.font-weight-bold #{item.price.toLocaleString('vi-VN')} đ
+                    td.text-right.font-weight-bold #{item.price.toLocaleString('vi-VN')}đ
                     td.text-center 
                       if item.discountPercentage > 0
                         span.badge.badge-warning.p-2 #{item.discountPercentage}%

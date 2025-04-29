@@ -1,0 +1,277 @@
+extends ../../layouts/default.pug
+
+block main
+  .container.py-5
+    h1.mb-4 Giỏ hàng
+    
+    if cart && cart.length
+      form#cartForm.needs-validation(action="/cart/buy", method="post", novalidate)
+        .card.mb-4
+          .card-header.bg-light
+            h5.mb-0 Sản phẩm (#{cart.length})
+          .card-body
+            each item, index in cart
+              .row.py-3.align-items-center(class=index < cart.length-1 ? "border-bottom" : "")
+                .col-md-1
+                  .form-check
+                    input.form-check-input(type="checkbox", name="selectedItems", value=item.slug, id=`item-${index}`)
+                .col-md-3
+                  img.img-fluid(src=item.image || "https://via.placeholder.com/100", alt=item.title)
+                .col-md-4
+                  label.form-check-label.h6(for=`item-${index}`) #{item.title}
+                  if item.price
+                    p.text-danger.font-weight-bold #{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}
+                .col-md-2
+                  .input-group
+                    .input-group-prepend
+                      button.btn.btn-outline-secondary(type="button", onclick=`decrementQuantity('quantity-${index}')`) -
+                    input.form-control.text-center(type="number", name=`quantities[${item.slug}]`, id=`quantity-${index}`, min="1", value=item.quantity)
+                    .input-group-append
+                      button.btn.btn-outline-secondary(type="button", onclick=`incrementQuantity('quantity-${index}')`) +
+                .col-md-2
+                  if item.price
+                    p.text-right.font-weight-bold #{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price * item.quantity)}
+                  button.btn.btn-sm.btn-outline-danger.mt-2(type="button", onclick=`removeItem('${item.slug}')`)
+                    i.fa.fa-trash.mr-1
+                    | Xóa
+            
+        .row.mb-4
+          .col-md-6
+            .card
+              .card-header.bg-light
+                h5.mb-0 Phương thức thanh toán
+              .card-body
+                .form-check.mb-3
+                  input.form-check-input#payment-cod(type="radio", name="paymentMethod", value="cod", checked)
+                  label.form-check-label(for="payment-cod") Thanh toán khi nhận hàng (COD)
+                .form-check
+                  input.form-check-input#payment-bank(type="radio", name="paymentMethod", value="bank")
+                  label.form-check-label(for="payment-bank") Chuyển khoản ngân hàng
+            
+          .col-md-6
+            .card
+              .card-header.bg-light
+                h5.mb-0 Tổng cộng
+              .card-body
+                .d-flex.justify-content-between.mb-2
+                  span Tạm tính:
+                  span#subtotal 0 ₫
+                .d-flex.justify-content-between.mb-2
+                  span Phí vận chuyển:
+                  span#shipping 30,000 ₫
+                .d-flex.justify-content-between.font-weight-bold
+                  span Tổng thanh toán:
+                  span#total.text-danger 0 ₫
+                button.btn.btn-primary.btn-block.mt-3(type="button", onclick="validateAndOpenPopup()")
+                  i.fa.fa-shopping-cart.mr-2
+                  | Tiến hành đặt hàng
+        
+        // Overlay và popup
+        #overlay.d-none
+        #addressPopup.d-none
+          .card
+            .card-header.bg-primary.text-white
+              h5.mb-0 Thông tin giao hàng
+            .card-body
+              .form-group
+                label(for="popup-name") Họ và tên
+                input#popup-name.form-control(type="text", required)
+                .invalid-feedback Vui lòng nhập họ tên
+              
+              .form-group
+                label(for="popup-phone") Số điện thoại
+                input#popup-phone.form-control(type="tel", required, pattern="[0-9]{10}")
+                .invalid-feedback Vui lòng nhập số điện thoại hợp lệ (10 số)
+              
+              .form-group
+                label(for="popup-address") Địa chỉ giao hàng
+                textarea#popup-address.form-control(rows="3", required)
+                .invalid-feedback Vui lòng nhập địa chỉ giao hàng
+              
+              .form-group
+                label(for="popup-note") Ghi chú (không bắt buộc)
+                textarea#popup-note.form-control(rows="2")
+              
+              .d-flex.justify-content-end.mt-4
+                button.btn.btn-outline-secondary.mr-2(type="button", onclick="closePopup()") Hủy
+                button.btn.btn-success(type="button", onclick="submitForm()")
+                  i.fa.fa-check.mr-1
+                  | Xác nhận đặt hàng
+    else
+      .text-center.py-5
+        i.fa.fa-shopping-cart.fa-4x.text-muted.mb-3
+        h3.text-muted Giỏ hàng của bạn đang trống
+        p.mb-4 Hãy thêm sản phẩm vào giỏ hàng để tiến hành đặt hàng
+        a.btn.btn-primary(href="/products")
+          i.fa.fa-arrow-left.mr-2
+          | Tiếp tục mua sắm
+
+  script.
+    // Các biến để lưu trữ tổng tiền
+    let subtotal = 0;
+    const shippingFee = 30000;
+    
+    // Tính toán tổng tiền khi trang tải
+    document.addEventListener('DOMContentLoaded', function() {
+      calculateTotal();
+      
+      // Gắn sự kiện khi checkbox thay đổi
+      const checkboxes = document.querySelectorAll('input[name="selectedItems"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', calculateTotal);
+      });
+      
+      // Gắn sự kiện khi số lượng thay đổi
+      const quantityInputs = document.querySelectorAll('input[type="number"]');
+      quantityInputs.forEach(input => {
+        input.addEventListener('change', calculateTotal);
+      });
+    });
+    
+    // Tăng số lượng
+    function incrementQuantity(id) {
+      const input = document.getElementById(id);
+      input.value = parseInt(input.value) + 1;
+      input.dispatchEvent(new Event('change'));
+    }
+    
+    // Giảm số lượng
+    function decrementQuantity(id) {
+      const input = document.getElementById(id);
+      const newValue = parseInt(input.value) - 1;
+      if (newValue >= 1) {
+        input.value = newValue;
+        input.dispatchEvent(new Event('change'));
+      }
+    }
+    
+    // Xóa sản phẩm
+    function removeItem(slug) {
+      if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+        // Gửi yêu cầu xóa đến server
+        fetch(`/cart/remove/${slug}`, {
+          method: 'POST',
+        }).then(response => {
+          if (response.ok) {
+            window.location.reload();
+          }
+        });
+      }
+    }
+    
+    // Tính tổng tiền
+    function calculateTotal() {
+      subtotal = 0;
+      const items = document.querySelectorAll('input[name="selectedItems"]');
+      
+      items.forEach((checkbox, index) => {
+        if (checkbox.checked) {
+          const quantityInput = document.getElementById(`quantity-${index}`);
+          const quantity = parseInt(quantityInput.value);
+          
+          // Lấy giá từ phần tử HTML (cần điều chỉnh tùy vào cấu trúc thực tế)
+          const priceText = checkbox.closest('.row').querySelector('.text-danger').innerText;
+          const price = parseInt(priceText.replace(/[^\d]/g, ''));
+          
+          subtotal += price * quantity;
+        }
+      });
+      
+      const total = subtotal + shippingFee;
+      
+      // Cập nhật hiển thị
+      document.getElementById('subtotal').innerText = formatCurrency(subtotal);
+      document.getElementById('total').innerText = formatCurrency(total);
+    }
+    
+    // Định dạng tiền tệ VND
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
+        .replace(/\s₫/, ' ₫');
+    }
+    
+    // Xác thực trước khi mở popup
+    function validateAndOpenPopup() {
+      const selectedItems = document.querySelectorAll('input[name="selectedItems"]:checked');
+      
+      if (selectedItems.length === 0) {
+        alert('Vui lòng chọn ít nhất một sản phẩm để tiến hành đặt hàng');
+        return;
+      }
+      
+      openPopup();
+    }
+    
+    // Mở popup
+    function openPopup() {
+      document.getElementById('overlay').className = 'position-fixed top-0 left-0 w-100 h-100 bg-dark';
+      document.getElementById('overlay').style = 'opacity: 0.5; z-index: 1040;';
+      
+      const popup = document.getElementById('addressPopup');
+      popup.className = 'position-fixed bg-white';
+      popup.style = 'top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050; width: 500px; max-width: 95%;';
+    }
+    
+    // Đóng popup
+    function closePopup() {
+      document.getElementById('overlay').className = 'd-none';
+      document.getElementById('addressPopup').className = 'd-none';
+    }
+    
+    // Gửi form
+    function submitForm() {
+      const name = document.getElementById('popup-name').value.trim();
+      const phone = document.getElementById('popup-phone').value.trim();
+      const address = document.getElementById('popup-address').value.trim();
+      const note = document.getElementById('popup-note').value.trim();
+      
+      // Kiểm tra hợp lệ
+      let valid = true;
+      
+      if (!name) {
+        document.getElementById('popup-name').classList.add('is-invalid');
+        valid = false;
+      } else {
+        document.getElementById('popup-name').classList.remove('is-invalid');
+      }
+      
+      if (!phone || !/^\d{10}$/.test(phone)) {
+        document.getElementById('popup-phone').classList.add('is-invalid');
+        valid = false;
+      } else {
+        document.getElementById('popup-phone').classList.remove('is-invalid');
+      }
+      
+      if (!address) {
+        document.getElementById('popup-address').classList.add('is-invalid');
+        valid = false;
+      } else {
+        document.getElementById('popup-address').classList.remove('is-invalid');
+      }
+      
+      if (!valid) return;
+      
+      // Thêm các trường vào form
+      const form = document.getElementById('cartForm');
+      
+      const hiddenFields = [
+        { name: 'customerName', value: name },
+        { name: 'customerPhone', value: phone },
+        { name: 'customerAddress', value: address },
+        { name: 'customerNote', value: note }
+      ];
+      
+      hiddenFields.forEach(({ name, value }) => {
+        let input = document.querySelector(`input[name="${name}"]`);
+        if (!input) {
+          input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = name;
+          form.appendChild(input);
+        }
+        input.value = value;
+      });
+      
+      // Gửi form
+      form.submit();
+    }

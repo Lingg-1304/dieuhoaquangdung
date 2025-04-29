@@ -12,25 +12,25 @@ block main
         
         .carousel-inner
           .carousel-item.active
-            img.d-block.w-100(src="https://karofivietnam.vn/wp-content/uploads/2022/05/karofivietnam.vn-banner-dieu-hoa-karofi-2.jpg" alt="Banner 1")
+            img.d-block.w-100(src="https://api-shop.daikin.com.vn:60443/storage/upload/media/KMs/June/Daikinday/daikin-kv-1920x650-1.png" alt="Banner 1")
             .carousel-caption
               h2.display-4 Điều hòa cao cấp
               p.lead Công nghệ Inverter tiết kiệm năng lượng
               a.btn.btn-primary.btn-lg(href="/products") Mua ngay
           
           .carousel-item
-            img.d-block.w-100(src="https://dieuhoadidong.info/wp-content/files/Banner%20web%20%C4%91i%E1%BB%81u%20ho%C3%A0%20di%20%C4%91%E1%BB%99ng%203.jpg" alt="Banner 2")
+            img.d-block.w-100(src="https://dieuhoa.top/wp-content/uploads/2022/07/dieu-hoa-daikin-banner.jpg" alt="Banner 2")
             .carousel-caption
               h2.display-4 Giảm đến 30%
               p.lead Chương trình khuyến mãi mùa hè
-              a.btn.btn-danger.btn-lg(href="/products/sale") Xem ưu đãi
+              //- a.btn.btn-danger.btn-lg(href="/products/sale") Xem ưu đãi
           
           .carousel-item
-            img.d-block.w-100(src="https://www.vlance.vn/uploads/portfolio/view/6dece7fdab9649807b7084cdcfccbc311d8863bb1.png" alt="Banner 3")
+            img.d-block.w-100(src="https://api-shop.daikin.com.vn:60443/storage/upload/media/dk-15-steps-home-1.jpg" alt="Banner 3")
             .carousel-caption
               h2.display-4 Dịch vụ lắp đặt miễn phí
               p.lead Đội ngũ kỹ thuật chuyên nghiệp
-              a.btn.btn-success.btn-lg(href="/services") Tìm hiểu thêm
+              //- a.btn.btn-success.btn-lg(href="/services") Tìm hiểu thêm
         
         a.carousel-control-prev(href="#homeBanner" role="button" data-slide="prev")
           span.carousel-control-prev-icon(aria-hidden="true")
@@ -71,7 +71,7 @@ block main
               .position-relative
                 if product.discountPercentage > 0
                   span.badge.badge-danger.position-absolute.m-2 -#{Math.round(product.discountPercentage)}%
-                img.card-img-top.p-3(src=product.thumbnail alt=product.title)
+                img.card-img-top.p-3(style="width: 100%; height: 200px; object-fit: cover;" src=product.thumbnail alt=product.title)
               .card-body.pb-0
                 h5.card-title= product.title
                 .mb-2
@@ -219,7 +219,7 @@ block main
     
     style. 
         #homeBanner img {
-            max-height: 400px; /* Hoặc chiều cao bạn muốn, ví dụ 300px, 500px */
+            max-height: 450px; /* Hoặc chiều cao bạn muốn, ví dụ 300px, 500px */
             object-fit: cover;
         }
 

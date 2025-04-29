@@ -1,4 +1,5 @@
 const Product = require("../../models/product-model");
+const Order = require("../../models/oder-model"); // Mongoose schema
 const sortOption = require("../../helpers/sortOption");
 const search = require("../../helpers/search");
 // [GET] /products
@@ -83,11 +84,62 @@ module.exports.getDetail = async (req, res) => {
     status: "active",
     brand: item.brand,
   }).limit(4);
-  console.log(relatedProducts);
+  // console.log(relatedProducts);
 
   res.render("client/pages/products/detail", {
     title: item.title,
     product: item,
     relatedProducts,
   });
+};
+
+// [GET] /products/:slug/buy
+module.exports.getBuy = async (req, res) => {
+  console.log(req.params.slug);
+  const slug = req.params.slug;
+  // res.send("OK");
+  res.render("client/pages/products/buy", {
+    slug,
+  });
+};
+
+// [POST] /products/:slug/buy
+module.exports.postBuy = async (req, res) => {
+  console.log(req.body);
+  const { slug, name, address, phone, quantity } = req.body;
+  // Tạo đơn hàng
+  const order = new Order({
+    items: [
+      {
+        slug: slug,
+        quantity: Number(quantity),
+      },
+    ],
+    name,
+    address,
+    phone,
+  });
+  await order.save();
+  res.send("Đặt hàng thành công");
+};
+
+// [POST] /products/:slug/add-to-cart
+module.exports.postAddToCart = async (req, res) => {
+  // console.log(req.params.slug);
+  const { slug, quantity, title } = req.body;
+
+  if (!req.session.cart) {
+    req.session.cart = []; // Tạo giỏ hàng nếu chưa có
+  }
+
+  // Kiểm tra sản phẩm đã có chưa
+  const existing = req.session.cart.find((item) => item.slug === slug);
+
+  if (existing) {
+    existing.quantity = Number(existing.quantity) + Number(quantity);
+  } else {
+    req.session.cart.push({ slug, quantity, title });
+  }
+
+  res.json({ message: "Đã thêm vào giỏ", cart: req.session.cart });
 };

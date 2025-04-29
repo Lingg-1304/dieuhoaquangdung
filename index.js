@@ -9,6 +9,8 @@ const systemConfig = require("./config/system.js");
 
 const methodOverride = require("method-override");
 
+const MongoStore = require("connect-mongo");
+
 // req.flash()
 const flash = require("express-flash");
 const cookieParser = require("cookie-parser");
@@ -39,11 +41,17 @@ app.use(cookieParser("your-secret-key"));
 // Cấu hình session
 app.use(
   session({
-    secret: "your-secret-key", // bạn có thể đổi thành chuỗi bí mật của riêng bạn
+    secret: "your-secret",
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
+    store: MongoStore.create({
+      mongoUrl: "mongodb://localhost:27017/your-db",
+      ttl: 7 * 24 * 60 * 60, // 7 ngày
+    }),
+    cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 },
   })
 );
+
 // Flash
 app.use(flash());
 app.use((req, res, next) => {

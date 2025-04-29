@@ -23,6 +23,13 @@ aside#adminSidebar.sider-admin.d-flex.flex-column(
       | Sản phẩm
 
     a.nav-link.d-flex.align-items-center.rounded.mb-1.px-3.py-2(
+      href=prefixAdmin + '/cart',
+      class=(currentPath.startsWith(prefixAdmin + '/blogs') ? 'active' : '')
+    )
+      i.fas.fa-newspaper.mr-3
+      | Đơn hàng
+
+    a.nav-link.d-flex.align-items-center.rounded.mb-1.px-3.py-2(
       href=prefixAdmin + '/blogs',
       class=(currentPath.startsWith(prefixAdmin + '/blogs') ? 'active' : '')
     )

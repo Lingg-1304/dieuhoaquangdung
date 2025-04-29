@@ -1,0 +1,201 @@
+extends ../../layouts/default.pug
+include ../../mixins/search.pug
+include ../../mixins/alert.pug
+block main
+  //- // Notifications
+  +alert(success,error)
+  .container-fluid.py-4
+    //- // Header with action buttons
+    .card.shadow-sm.mb-4
+      .card-body
+        .d-md-flex.justify-content-between.align-items-center
+          h4.font-weight-bold.text-primary.mb-3.mb-md-0
+            i.fas.fa-boxes.mr-2
+            | Quản lý đơn hàng
+          .d-flex.flex-wrap
+            .btn-group.mr-2.mb-2.mb-md-0
+              form(id="form-status")
+                if status === undefined
+                  button.btn.btn-secondary(type="submit", name="status", value="") 
+                    i.fas.fa-list.mr-1
+                    | Tất cả
+                else 
+                  button.btn.btn-outline-secondary(type="submit", name="status", value="")
+                    i.fas.fa-list.mr-1
+                    | Tất cả
+                if status === "active"
+                  button.btn.btn-success(type="submit", name="status", value="active")
+                    i.fas.fa-check-circle.mr-1
+                    | Đã đọc
+                else 
+                  button.btn.btn-outline-success(type="submit", name="status", value="active")
+                    i.fas.fa-check-circle.mr-1
+                    | Đã đọc
+                if status === "inactive"
+                  button.btn.btn-danger(type="submit", name="status", value="inactive")
+                    i.fas.fa-times-circle.mr-1
+                    | Chưa đọc
+                else 
+                  button.btn.btn-outline-danger(type="submit", name="status", value="inactive")
+                    i.fas.fa-times-circle.mr-1
+                    | Chưa đọc
+    
+    //- // Products table card
+    .card.shadow-sm
+      .card-header.bg-white.d-flex.justify-content-between.align-items-center.py-3
+        h5.mb-0.font-weight-bold.text-dark Danh sách đơn hàng
+        .form-container#form-sort
+          select#sort.form-control(name="sort")
+            option(value="" hidden) Sắp xếp
+            //- option(value="price_asc", selected=sort === "1") Giá: Thấp đến cao
+            //- option(value="price_desc", selected=sort === "2") Giá: Cao đến thấp
+      .card-body.p-0
+        if orders.length
+            .table-responsive
+            table.table.table-striped.mb-0
+                thead.bg-light
+                tr
+                    th.text-center STT
+                    th.text-center Thời gian
+                    th.text-center Tên khách
+                    th SĐT
+                    th.text-right Địa chỉ
+                    th.text-center Sản phẩm
+                    th.text-center Trạng thái
+                tbody
+                    each order, index in orders
+                        tr
+                            td #{index + 1}
+                            td #{order.createdAt.toLocaleString('vi-VN')}
+                            td #{order.name}
+                            td #{order.phone}
+                            td #{order.address}
+                            td
+                                ul
+                                    each item in order.items
+                                        li #{item.slug} x #{item.quantity}
+                            td.text-center 
+                                form(method="POST", action=`/admin/cart/change-status/${order.status === 'active' ? 'inactive' : 'active'}/${order._id}`, style="display:inline;")
+                                    input(type="hidden", name="currentPage", value=currentPage)
+                                    if order.status === 'active'
+                                        button.btn.btn-sm.btn-success.px-3(type="submit") 
+                                            i.fas.fa-check-circle.mr-1
+                                            | Đã đọc
+                                    else
+                                        button.btn.btn-sm.btn-danger.px-3(type="submit") 
+                                            i.fas.fa-times-circle.mr-1
+                                            | Chưa đọc
+
+        else
+            p Không có đơn hàng nào.
+      
+      if totalPages > 1
+        .card-footer.bg-white
+          nav.d-flex.justify-content-center
+            ul.pagination.pagination-sm.mb-0
+              //- // Nút "Trước"
+              li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+                a.page-link(
+                  href=`?page=${currentPage - 1}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                )
+                  i.fas.fa-angle-left
+                  span.sr-only Trước
+
+              //- // Trang đầu
+              if currentPage > 3
+                li.page-item
+                  a.page-link(
+                    href=`?page=1${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                  ) 1
+
+              //- // Dấu ...
+              if currentPage > 4
+                li.page-item.disabled
+                  span.page-link ...
+
+              //- // Các trang xung quanh trang hiện tại
+              each num in [...Array(totalPages).keys()].map(n => n + 1).filter(p => p >= currentPage - 2 && p <= currentPage + 2)
+                li.page-item(class=(num === currentPage ? 'active' : ''))
+                  a.page-link(
+                    href=`?page=${num}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                  ) #{num}
+
+              //- // Dấu ...
+              if currentPage < totalPages - 3
+                li.page-item.disabled
+                  span.page-link ...
+
+              //- // Trang cuối
+              if currentPage < totalPages - 2
+                li.page-item
+                  a.page-link(
+                    href=`?page=${totalPages}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                  ) #{totalPages}
+
+              //- // Nút "Sau"
+              li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+                a.page-link(
+                  href=`?page=${currentPage + 1}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                )
+                  i.fas.fa-angle-right
+                  span.sr-only Sau
+
+  style.
+    .border-4 {
+      border-width: 4px !important;
+    }
+    .card {
+      border: none;
+      border-radius: 0.5rem;
+    }
+    .table th {
+      border-top: none;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      color: #555;
+    }
+    .product-img-container {
+      width: 60px;
+      height: 60px;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+    .product-img-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .table td {
+      vertical-align: middle;
+    }
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    .empty-state i {
+      font-size: 3rem;
+    }
+    .search-container {
+      min-width: 250px;
+    }
+    .text-primary {
+      color: #4e73df !important;
+    }
+    .btn-primary {
+      background-color: #4e73df;
+      border-color: #4e73df;
+    }
+    .btn-primary:hover {
+      background-color: #3d5ecc;
+      border-color: #3d5ecc;
+    }
+    .pagination .page-link {
+      color: #4e73df;
+    }
+    .pagination .page-item.active .page-link {
+      background-color: #4e73df;
+      border-color: #4e73df;
+    }

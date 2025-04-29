@@ -2,9 +2,6 @@ const Product = require("../../models/product-model");
 
 const systemConfig = require("../../config/system");
 
-const searchHelpers = require("../../helpers/search");
-const statusHelpers = require("../../helpers/filterStatus");
-
 // [GET] --> /admin/products
 module.exports.index = async (req, res) => {
   let keyword = req.query.keyword;
@@ -29,7 +26,7 @@ module.exports.index = async (req, res) => {
       sort = "2";
       break;
     case "":
-      sortOption = { stock: -1 }; // hoặc trường viewCount nếu có
+      sortOption = { position: -1 }; // hoặc trường viewCount nếu có
       break;
   }
 
@@ -76,6 +73,7 @@ module.exports.createPost = async (req, res) => {
     (product.price * (100 - product.discountPercentage)) / 100
   );
   const products = await Product.find({ deleted: false });
+  product.thumbnail = `/uploads/${req.file.filename}`;
   product.position = products.length;
   product.features = product.features
     .split("\n")
@@ -125,6 +123,9 @@ module.exports.editGet = async (req, res) => {
 module.exports.editPost = async (req, res) => {
   const id = req.params.id;
   const item = req.body;
+  if (req.file) {
+    item.thumbnail = `/uploads/${req.file.filename}`;
+  }
   item.newPrice = Math.round(
     (item.price * (100 - item.discountPercentage)) / 100
   );

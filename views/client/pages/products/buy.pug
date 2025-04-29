@@ -1,0 +1,19 @@
+extends ../../layouts/default.pug
+
+block main  
+    form(action=`/products/${slug}/buy`, method="POST")
+        input(type="hidden" , value = `${slug}` , name="slug")
+        
+        label(for="address") Tên
+        input(type="text",name="name") 
+
+        label(for="phone") Số điện thoại 
+        input(type="text",name="phone")
+
+        label(for="address") Địa chỉ
+        input(type="text",name="address") 
+
+        label(for="quantity") Số lượng
+        input(type="number", name="quantity")
+
+        button.btn.btn-lg.ml-2(type="submit") Đặt hàng

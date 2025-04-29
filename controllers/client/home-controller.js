@@ -11,7 +11,7 @@ module.exports.index = async (req, res) => {
   //newProducts
   const newProducts = await Product.find(find).limit(4);
 
-  const products = Product.find(find);
+  const products = await Product.find(find);
   res.render("client/pages/home/index", {
     title: "Trang chủ",
     featuredProducts,
