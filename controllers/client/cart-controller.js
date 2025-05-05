@@ -2,7 +2,7 @@ const Order = require("../../models/oder-model"); // Mongoose schema
 
 module.exports.index = async (req, res) => {
   const cart = req.session.cart;
-  // console.log(cart);
+  console.log(cart);
   res.render("client/pages/cart/index", {
     title: "Giỏ hàng",
     cart,
