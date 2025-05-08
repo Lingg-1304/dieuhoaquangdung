@@ -11,12 +11,12 @@ block main
             h5.mb-0 Sản phẩm (#{cart.length})
           .card-body
             each item, index in cart
-              .row.py-3.align-items-center(class=index < cart.length-1 ? "border-bottom" : "")
+              .row.py-3.align-items-center(class=index < cart.length-1 ? "border-bottom" : "", id=`item-${item.slug}`)
                 .col-md-1
                   .form-check
                     input.form-check-input(type="checkbox", name="selectedItems", value=item.slug, id=`item-${index}`)
                 .col-md-3
-                  img.img-fluid(src=item.image || "https://via.placeholder.com/100", alt=item.title)
+                  img.img-fluid(src=item.thumbnail || "https://via.placeholder.com/100", alt=item.title)
                 .col-md-4
                   label.form-check-label.h6(for=`item-${index}`) #{item.title}
                   if item.price
@@ -24,13 +24,11 @@ block main
                 .col-md-2
                   .input-group
                     .input-group-prepend
-                      button.btn.btn-outline-secondary(type="button", onclick=`decrementQuantity('quantity-${index}')`) -
-                    input.form-control.text-center(type="number", name=`quantities[${item.slug}]`, id=`quantity-${index}`, min="1", value=item.quantity)
+                      button.btn.btn-outline-secondary(type="button", onclick=`decrementQuantity('quantity-${index}')`) - 
+                    input.form-control.text-center(type="number", name=`quantities[${item.slug}]`, id=`quantity-${index}`, min="1", value=item.quantity || 1)
                     .input-group-append
                       button.btn.btn-outline-secondary(type="button", onclick=`incrementQuantity('quantity-${index}')`) +
                 .col-md-2
-                  if item.price
-                    p.text-right.font-weight-bold #{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price * item.quantity)}
                   button.btn.btn-sm.btn-outline-danger.mt-2(type="button", onclick=`removeItem('${item.slug}')`)
                     i.fa.fa-trash.mr-1
                     | Xóa
@@ -107,6 +105,35 @@ block main
           | Tiếp tục mua sắm
 
   script.
+    // Xóa sản phẩm
+    function removeItem(slug) {
+      if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+        // Gửi yêu cầu xóa đến server
+        fetch(`/cart/remove/${slug}`, {
+          method: 'POST',
+        })
+          .then(response => response.json()) // Giả sử server trả về một JSON để xác nhận
+          .then(data => {
+            if (data.success) {
+              // Cập nhật lại giỏ hàng sau khi xóa sản phẩm
+              // Xóa phần tử khỏi DOM
+              const itemRow = document.querySelector(`#item-${slug}`);
+              if (itemRow) {
+                itemRow.remove();
+              }
+              // Cập nhật lại tổng tiền sau khi xóa
+              calculateTotal();
+            } else {
+              alert('Không thể xóa sản phẩm này');
+            }
+          })
+          .catch(error => {
+            console.error('Lỗi khi xóa sản phẩm:', error);
+            alert('Có lỗi xảy ra, vui lòng thử lại');
+          });
+      }
+    }
+
     // Các biến để lưu trữ tổng tiền
     let subtotal = 0;
     const shippingFee = 30000;

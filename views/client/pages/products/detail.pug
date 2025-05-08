@@ -69,13 +69,11 @@ block main
         
         //- Mua hàng
         form(id="buy", method="GET", action=`/products/${product.slug}/buy`)
-          button.btn.btn-lg.ml-2(type="submit") Mua ngay
+          button.btn.btn-danger.btn-lg.mb-2.mb-sm-0.flex-fill(type="submit") Mua ngay
         form(id="add-to-cart", method="POST", action=`/products/${product.slug}/add-to-cart`)
-          label(for="quantity") Số lượng
-          input(type="number" , name="quantity")
           input(type="hidden" , value=`${product.slug}` , name="slug")
           input(type="hidden" , value=`${product.title}` , name="title")
-          button.btn.btn-lg.ml-2(type="submit") Thêm vào giỏ hàng
+          button.btn.btn-primary.btn-lg.mb-2.mb-sm-0.flex-fill(type="submit") Thêm vào giỏ hàng
     //- Mô tả sản phẩm
     .row.mt-5
       .col-12

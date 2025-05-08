@@ -161,16 +161,15 @@ block main
             ol.carousel-indicators.position-relative.mt-3
               each testimonial, index in testimonials
                 li(data-target="#testimonialCarousel" data-slide-to=index class=index === 0 ? 'active' : '')
-
   // Brands
-  section.brands-section.py-5
-    .container
-      h2.text-center.mb-5 Thương hiệu nổi tiếng
-      .row.align-items-center.text-center
-        - const brands = ['Dakin', 'Panasonic', 'Samsung', 'LG', 'Mitsubishi', 'Toshiba']
-        each brand in brands
-          .col-md-2.col-4.mb-4
-            img.img-fluid(src="https://via.placeholder.com/150x80?text=" + brand alt=brand)
+  //- section.brands-section.py-5
+  //-   .container
+  //-     h2.text-center.mb-5 Thương hiệu nổi tiếng
+  //-     .row.align-items-center.text-center
+  //-       - const brands = ['Dakin', 'Panasonic', 'Samsung', 'LG', 'Mitsubishi', 'Toshiba']
+  //-       each brand in brands
+  //-         .col-md-2.col-4.mb-4
+  //-           img.img-fluid(src="https://via.placeholder.com/150x80?text=" + brand alt=brand)
 
   // Blog Posts
   section.blog-section.py-5.bg-light
