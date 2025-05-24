@@ -9,12 +9,11 @@ const systemConfig = require("./config/system.js");
 
 const methodOverride = require("method-override");
 
-const MongoStore = require("connect-mongo");
+const sessionMiddleware = require("./models/session-model.js");
 
 // req.flash()
 const flash = require("express-flash");
 const cookieParser = require("cookie-parser");
-const session = require("express-session");
 
 const app = express();
 const Port = process.env.PORT;
@@ -36,21 +35,10 @@ app.use(express.static(`${__dirname}/public`));
 app.use(methodOverride("_method"));
 
 // Parse cookies
-app.use(cookieParser("your-secret-key"));
+app.use(cookieParser("linhdeptrai"));
 
 // Cấu hình session
-app.use(
-  session({
-    secret: "your-secret",
-    resave: false,
-    saveUninitialized: true,
-    store: MongoStore.create({
-      mongoUrl: "mongodb://localhost:27017/your-db",
-      ttl: 7 * 24 * 60 * 60, // 7 ngày
-    }),
-    cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 },
-  })
-);
+app.use(sessionMiddleware);
 
 // Flash
 app.use(flash());

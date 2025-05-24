@@ -1,5 +1,5 @@
 const Product = require("../../models/product-model");
-const Order = require("../../models/oder-model"); // Mongoose schema
+const Order = require("../../models/order-model"); // Mongoose schema
 const sortOption = require("../../helpers/sortOption");
 const search = require("../../helpers/search");
 // [GET] /products
@@ -93,53 +93,62 @@ module.exports.getDetail = async (req, res) => {
   });
 };
 
-// [GET] /products/:slug/buy
-module.exports.getBuy = async (req, res) => {
-  console.log(req.params.slug);
-  const slug = req.params.slug;
-  // res.send("OK");
-  res.render("client/pages/products/buy", {
-    slug,
-  });
-};
+// [POST] /products/:slug
+module.exports.postDetail = async (req, res) => {
+  // console.log(req.url);
+  if (req.query.action === "add-to-cart") {
+    const { slug } = req.body;
 
-// [POST] /products/:slug/buy
-module.exports.postBuy = async (req, res) => {
-  console.log(req.body);
-  const { slug, name, address, phone, quantity } = req.body;
-  // Tạo đơn hàng
-  const order = new Order({
-    items: [
-      {
-        slug: slug,
-        quantity: Number(quantity),
-      },
-    ],
-    name,
-    address,
-    phone,
-  });
-  await order.save();
-  res.send("Đặt hàng thành công");
-};
+    if (!req.session.cart) {
+      req.session.cart = []; // Tạo giỏ hàng nếu chưa có
+    }
 
-// [POST] /products/:slug/add-to-cart
-module.exports.postAddToCart = async (req, res) => {
-  // console.log(req.params.slug);
-  const { slug, quantity, title } = req.body;
-
-  if (!req.session.cart) {
-    req.session.cart = []; // Tạo giỏ hàng nếu chưa có
+    // Kiểm tra sản phẩm đã có chưa
+    const existing = req.session.cart.find((item) => item.slug === slug);
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: "Sản phẩm đã có trong giỏ hàng",
+      });
+    }
+    req.session.cart.push({ slug });
+    return res.json({ success: true });
   }
+  if (req.query.action === "buy") {
+    const {
+      slug,
+      quantity,
+      customerName,
+      customerPhone,
+      customerAddress,
+      customerNote,
+      customerEmail,
+      paymentMethod,
+      orderCode,
+      subtotal,
+    } = req.body;
+    // xử lý logic mua hàng
 
-  // Kiểm tra sản phẩm đã có chưa
-  const existing = req.session.cart.find((item) => item.slug === slug);
+    const userId = req.session.userId;
+    const myOrder = new Order({
+      orderId: orderCode,
+      userId,
+      items: [{ slug, quantity }],
+      name: customerName,
+      email: customerEmail,
+      address: customerAddress,
+      phone: customerPhone,
+      note: customerNote,
+      paymentMethod: paymentMethod,
+      totalPrice: subtotal,
+    });
 
-  if (existing) {
-    existing.quantity = Number(existing.quantity) + Number(quantity);
-  } else {
-    req.session.cart.push({ slug, quantity, title });
+    console.log(myOrder);
+
+    await myOrder.save();
+
+    return res.status(200).json({
+      success: true,
+    });
   }
-
-  res.json({ message: "Đã thêm vào giỏ", cart: req.session.cart });
 };

@@ -1,37 +1,38 @@
 extends ../../layouts/default.pug
 
 block main
-  //- Block main trong trang chi tiết sản phẩm
   .container.py-4
     .row
-      //- Phần hình ảnh sản phẩm
+      //- Product Images Section
       .col-lg-6.mb-4
         .card.border-0.shadow-sm
           img.card-img-top.img-fluid#main-product-image(src=product.thumbnail, alt=product.title)
         .row.mt-3
-          .col-3
-            img.img-thumbnail.product-thumbnail(src=product.thumbnail, alt=product.title, onclick="changeImage(this.src)")
-          .col-3
-            img.img-thumbnail.product-thumbnail(src="/api/placeholder/400/400", alt="Ảnh khác", onclick="changeImage(this.src)")
-          .col-3
-            img.img-thumbnail.product-thumbnail(src="/api/placeholder/400/400", alt="Ảnh khác", onclick="changeImage(this.src)")
-          .col-3
-            img.img-thumbnail.product-thumbnail(src="/api/placeholder/400/400", alt="Ảnh khác", onclick="changeImage(this.src)")
+          each thumb, idx in [product.thumbnail].concat(product.images || []).slice(0,4)
+            .col-3
+              img.img-thumbnail.product-thumbnail(
+                src=thumb, 
+                alt=product.title + ' thumbnail ' + (idx+1), 
+                onclick="changeImage(this.src)"
+              )
 
-      //- Phần thông tin sản phẩm
+      //- Product Info Section
       .col-lg-6
         h1.product-title.mb-3= product.title
         .d-flex.align-items-center.mb-3
-          span.badge.badge-primary.mr-2= product.brand
+          if product.brand
+            span.badge.badge-primary.mr-2= product.brand
           .ratings
-            i.fas.fa-star.text-warning
-            i.fas.fa-star.text-warning
-            i.fas.fa-star.text-warning
-            i.fas.fa-star.text-warning
-            i.fas.fa-star-half-alt.text-warning
-            span.ml-2 (120 đánh giá)
+            - var stars = Math.floor(product.rating || 4.5)
+            - var half = (product.rating || 4.5) % 1 >= 0.5
+            - for(var i=0;i<stars;i++){ 
+              i.fas.fa-star.text-warning
+            - }
+            if half
+              i.fas.fa-star-half-alt.text-warning
+            span.ml-2 (#{product.reviewCount || 120} đánh giá)
         
-        //- Giá sản phẩm
+        //- Product Price
         .product-price.mb-3
           if product.discountPercentage
             .d-flex.align-items-center
@@ -42,7 +43,7 @@ block main
           else
             h3.mb-0= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)
         
-        //- Tình trạng
+        //- Stock Status
         .product-stock.mb-3
           if product.stock > 0
             p.text-success.mb-1
@@ -53,28 +54,32 @@ block main
               i.fas.fa-times-circle.mr-1
               | Hết hàng
         
-        //- Tính năng nổi bật
-        .product-features.mb-3
-          h5 Tính năng nổi bật:
-          ul.list-group.list-group-flush
-            each feature in product.features
-              li.list-group-item.pl-0
-                i.fas.fa-check.text-success.mr-2
-                = feature
+        //- Features
+        if product.features && product.features.length
+          .product-features.mb-3
+            h5 Tính năng nổi bật:
+            ul.list-group.list-group-flush
+              each feature in product.features
+                li.list-group-item.pl-0
+                  i.fas.fa-check.text-success.mr-2
+                  = feature
         
-        //- Bảo hành
-        .product-warranty.mb-4
-          h5 Bảo hành:
-          p= product.warranty
+        //- Warranty
+        if product.warranty
+          .product-warranty.mb-4
+            h5 Bảo hành:
+            p= product.warranty
         
-        //- Mua hàng
-        form(id="buy", method="GET", action=`/products/${product.slug}/buy`)
-          button.btn.btn-danger.btn-lg.mb-2.mb-sm-0.flex-fill(type="submit") Mua ngay
-        form(id="add-to-cart", method="POST", action=`/products/${product.slug}/add-to-cart`)
-          input(type="hidden" , value=`${product.slug}` , name="slug")
-          input(type="hidden" , value=`${product.title}` , name="title")
-          button.btn.btn-primary.btn-lg.mb-2.mb-sm-0.flex-fill(type="submit") Thêm vào giỏ hàng
-    //- Mô tả sản phẩm
+        //- Actions
+        .d-flex.flex-wrap.gap-2
+          button.btn.btn-danger.btn-lg.flex-fill(
+            type="button", 
+            data-toggle="modal", 
+            data-target="#orderModal"
+          ) Mua ngay
+          button.btn.btn-primary.btn-lg.flex-fill(type="button", onclick=`addToCart('${product.slug}')`) Thêm vào giỏ hàng
+
+    //- Product Description Tabs
     .row.mt-5
       .col-12
         ul.nav.nav-tabs#productTabs(role="tablist")
@@ -83,7 +88,7 @@ block main
           li.nav-item
             a.nav-link#specification-tab(data-toggle="tab", href="#specification", role="tab") Thông số kỹ thuật
           li.nav-item
-            a.nav-link#reviews-tab(data-toggle="tab", href="#reviews", role="tab") Đánh giá (120)
+            a.nav-link#reviews-tab(data-toggle="tab", href="#reviews", role="tab") Đánh giá (#{product.reviewCount || 120})
         
         .tab-content.pt-4
           .tab-pane.fade.show.active#description(role="tabpanel")
@@ -107,75 +112,291 @@ block main
                       td= product.stock > 0 ? "Còn hàng" : "Hết hàng"
                     tr
                       th(scope="row") SKU
-                      td= product.title
+                      td= product.sku || product.title
           
           .tab-pane.fade#reviews(role="tabpanel")
             .card.border-0
               .card-body
                 .d-flex.justify-content-between.align-items-center.mb-4
                   h4 Đánh giá từ khách hàng
-                  button.btn.btn-outline-primary Viết đánh giá
+                  button.btn.btn-outline-primary(type="button") Viết đánh giá
                 
-                .review-item.mb-4.pb-4.border-bottom
-                  .d-flex.align-items-center.mb-2
-                    img.rounded-circle.mr-3(src="/api/placeholder/50/50", alt="Avatar")
-                    .review-info
-                      h5.mb-0 Nguyễn Văn A
-                      .ratings
-                        i.fas.fa-star.text-warning
-                        i.fas.fa-star.text-warning
-                        i.fas.fa-star.text-warning
-                        i.fas.fa-star.text-warning
-                        i.fas.fa-star.text-warning
-                      small.text-muted 2 ngày trước
-                  p.mt-2 Sản phẩm rất tốt, đúng như mô tả. Giao hàng nhanh, đóng gói cẩn thận. Rất hài lòng với chất lượng sản phẩm và dịch vụ.
+                if product.reviews && product.reviews.length
+                  each review in product.reviews
+                    .review-item.mb-4.pb-4.border-bottom
+                      .d-flex.align-items-center.mb-2
+                        img.rounded-circle.mr-3(src=review.avatar || "/api/placeholder/50/50", alt="Avatar")
+                        .review-info
+                          h5.mb-0= review.name
+                          .ratings
+                            - for(var i=0;i<review.rating;i++){
+                              i.fas.fa-star.text-warning
+                            - }
+                            - for(var i=review.rating;i<5;i++){
+                              i.far.fa-star.text-warning
+                            - }
+                          small.text-muted= review.timeAgo
+                      p.mt-2= review.comment
+                else
+                  p.text-muted Chưa có đánh giá nào cho sản phẩm này.
+
+  //- Order Modal
+  //- Order Modal
+  .modal.fade#orderModal(tabindex="-1", role="dialog", aria-labelledby="orderModalLabel", aria-hidden="true")
+    .modal-dialog.modal-lg(role="document")
+      .modal-content
+        .modal-header.bg-light
+          h5.modal-title#orderModalLabel
+            i.fas.fa-shopping-cart.mr-2
+            | Xác nhận đặt hàng
+          button.close(type="button", data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+        form#buyForm(method="POST", action=`/products/${product.slug}?action=buy`)
+          .modal-body
+            .row
+              //- Product summary column
+              .col-md-5.order-summary-column
+                .card.border-0.mb-3
+                  .card-body.bg-light.rounded
+                    h5.card-title.border-bottom.pb-2 Thông tin sản phẩm
+                    .d-flex.mb-3
+                      img.img-thumbnail.mr-3(src=product.thumbnail, alt=product.title, style="width: 80px; height: 80px; object-fit: contain;")
+                      div
+                        h6= product.title
+                        if product.brand
+                          p.mb-1.text-muted= product.brand
+                    
+                    .form-group
+                      .d-flex.justify-content-between.align-items-center
+                        label.font-weight-bold(for="quantity") Số lượng:
+                        .input-group.input-group-sm.quantity-input(style="width: 120px")
+                          .input-group-prepend
+                            button.btn.btn-outline-secondary(type="button", onclick="updateQuantity(-1)")
+                              i.fas.fa-minus
+                          input.form-control.text-center#quantity(type="number", name="quantity", min="1", max=product.stock, value="1", required, onchange="updateOrderSummary()")
+                          .input-group-append
+                            button.btn.btn-outline-secondary(type="button", onclick="updateQuantity(1)")
+                              i.fas.fa-plus
+                    
+                    .price-info.mb-3
+                      if product.discountPercentage
+                        p.mb-1 
+                          span.font-weight-bold Giá: 
+                          span.text-danger= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price * (1 - product.discountPercentage/100))
+                          small.text-muted.ml-2
+                            del= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)
+                      else
+                        p.mb-1
+                          span.font-weight-bold Giá: 
+                          span= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)
+                    
+                    .order-summary
+                      .d-flex.justify-content-between.border-top.pt-2
+                        h6 Tạm tính:
+                        h6.font-weight-bold#subtotal= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.discountPercentage ? product.price * (1 - product.discountPercentage/100) : product.price)
+                      .d-flex.justify-content-between
+                        span Phí vận chuyển:
+                        span#shipping-fee Miễn phí
+                      .d-flex.justify-content-between.border-top.pt-2.mt-2
+                        h5 Tổng cộng:
+                        h5.text-danger.font-weight-bold#total-amount= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.discountPercentage ? product.price * (1 - product.discountPercentage/100) : product.price)
+                      
+                    if product.stock <= 5
+                      .stock-warning.mt-3
+                        p.text-warning.mb-0
+                          i.fas.fa-exclamation-triangle.mr-1
+                          | Chỉ còn #{product.stock} sản phẩm
+
+              //- Customer information column
+              .col-md-7
+                h5.border-bottom.pb-2.mb-3 Thông tin khách hàng
+                .form-row
+                  .form-group.col-md-6
+                    label(for="customerName")
+                      i.fas.fa-user.mr-1
+                      | Họ và tên 
+                      span.text-danger *
+                    input.form-control#customerName(type="text", name="customerName", required, placeholder="Nguyễn Văn A")
+                  .form-group.col-md-6
+                    label(for="customerPhone")
+                      i.fas.fa-phone.mr-1
+                      | Số điện thoại 
+                      span.text-danger *
+                    input.form-control#customerPhone(type="tel", name="customerPhone", required, pattern="[0-9]{10,11}", placeholder="0912345678")
                 
-                .review-item.mb-4.pb-4.border-bottom
-                  .d-flex.align-items-center.mb-2
-                    img.rounded-circle.mr-3(src="/api/placeholder/50/50", alt="Avatar")
-                    .review-info
-                      h5.mb-0 Trần Thị B
-                      .ratings
-                        i.fas.fa-star.text-warning
-                        i.fas.fa-star.text-warning
-                        i.fas.fa-star.text-warning
-                        i.fas.fa-star.text-warning
-                        i.far.fa-star.text-warning
-                      small.text-muted 1 tuần trước
-                  p.mt-2 Sản phẩm tốt, nhưng giao hàng hơi chậm. Nhìn chung vẫn hài lòng về chất lượng sản phẩm.
-
-  script.
-    function changeImage(src) {
-      document.getElementById('main-product-image').src = src;
-    }
-    
-    function increaseQuantity() {
-      const quantityInput = document.getElementById('quantity');
-      const currentValue = parseInt(quantityInput.value);
-      const maxValue = parseInt(quantityInput.max);
-      if (currentValue < maxValue) {
-        quantityInput.value = currentValue + 1;
-      }
-    }
-    
-    function decreaseQuantity() {
-      const quantityInput = document.getElementById('quantity');
-      const currentValue = parseInt(quantityInput.value);
-      if (currentValue > 1) {
-        quantityInput.value = currentValue - 1;
-      }
-    }
-    function addToCart(productId, quantity) {
-      let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-      const existing = cart.find(item => item.productId === productId);
-      if (existing) {
-        existing.quantity += quantity;
-      } else {
-        cart.push({ productId, quantity });
-      }
-
-      localStorage.setItem('cart', JSON.stringify(cart));
-      alert('Đã thêm vào giỏ hàng!');
-    }
+                .form-group
+                  label(for="customerEmail")
+                    i.fas.fa-envelope.mr-1
+                    | Email
+                  input.form-control#customerEmail(type="email", name="customerEmail", placeholder="email@example.com")
+                
+                .form-group
+                  label(for="customerAddress")
+                    i.fas.fa-map-marker-alt.mr-1
+                    | Địa chỉ nhận hàng 
+                    span.text-danger *
+                  textarea.form-control#customerAddress(name="customerAddress", rows="2", required, placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố")
+                
+                h5.border-bottom.pb-2.mb-3.mt-4 Phương thức thanh toán
+                .payment-methods
+                  .form-check.mb-2
+                    input.form-check-input#payment-cod(type="radio", name="paymentMethod", value="cod", checked)
+                    label.form-check-label(for="payment-cod")
+                      i.fas.fa-money-bill-wave.mr-2.text-success
+                      | Thanh toán khi nhận hàng (COD)
+                  .form-check.mb-2
+                    input.form-check-input#payment-bank(type="radio", name="paymentMethod", value="bank")
+                    label.form-check-label(for="payment-bank")
+                      i.fas.fa-university.mr-2.text-primary
+                      | Chuyển khoản ngân hàng
+                
+                .form-group.mt-4
+                  label(for="customerNote")
+                    i.fas.fa-sticky-note.mr-1
+                    | Ghi chú (tùy chọn)
+                  textarea.form-control#customerNote(name="customerNote", rows="2", placeholder="Yêu cầu đặc biệt về sản phẩm hoặc giao hàng...")
+          
+          .modal-footer.bg-light
+            button.btn.btn-secondary(type="button", data-dismiss="modal") Đóng
+            button.btn.btn-danger.btn-lg(type="button", onclick="buy()")
+              i.fas.fa-shopping-bag.mr-2
+              | Đặt hàng
   
+  //- Scripts
+  script.
+    // Global product variables for order calculations
+    const productId = '#{product._id}';
+    const productPrice = #{product.price};
+    const productStock = #{product.stock};
+    const productDiscountPercentage = #{product.discountPercentage || 0};
+    const productHasDiscount = productDiscountPercentage > 0;
+    
+    // Khi modal mở: reset lại số lượng và cập nhật đơn hàng
+    $('#orderModal').on('show.bs.modal', function () {
+      document.getElementById('quantity').value = 1;
+      updateOrderSummary();
+    });
+
+    // Cập nhật số lượng
+    function updateQuantity(change) {
+      const quantityInput = document.getElementById('quantity');
+      const currentValue = parseInt(quantityInput.value) || 1;
+      const newValue = currentValue + change;
+      const maxStock = parseInt(quantityInput.getAttribute('max')) || 999;
+
+      if (newValue >= 1 && newValue <= maxStock) {
+        quantityInput.value = newValue;
+        updateOrderSummary();
+      }
+    }
+
+    // Cập nhật tổng đơn hàng
+    function updateOrderSummary() {
+      const quantity = parseInt(document.getElementById('quantity').value) || 1;
+      const unitPrice = productHasDiscount
+        ? productPrice * (1 - productDiscountPercentage / 100)
+        : productPrice;
+      const subtotal = unitPrice * quantity;
+
+      let shipping = 0;
+      document.getElementById('shipping-fee').textContent = 'Miễn phí';
+
+      const total = subtotal + shipping;
+      document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+      document.getElementById('total-amount').textContent = formatCurrency(total);
+    }
+
+    // Xử lý đặt hàng
+    async function buy() {
+      const form = document.getElementById('buyForm');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const orderButton = form.querySelector('button[type="button"][onclick="buy()"]');
+      const originalButtonText = orderButton.innerHTML;
+      orderButton.disabled = true;
+      orderButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang xử lý...';
+
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      const quantity = parseInt(document.getElementById('quantity').value) || 1;
+
+      data.slug = '#{product.slug}';
+      data.orderCode = generateOrderCode();;
+      data.unitPrice = productHasDiscount 
+        ? productPrice * (1 - productDiscountPercentage / 100)
+        : productPrice;
+      data.subtotal = data.unitPrice * quantity;
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Đặt hàng thành công!',
+            text: `Đơn hàng của bạn đã được tạo với mã: ${data.orderCode}`,
+            confirmButtonText: 'Xem đơn hàng',
+            showCancelButton: true,
+            cancelButtonText: 'Tiếp tục mua sắm'
+          }).then((res) => {
+            if(res.isConfirmed){
+              window.location.href = `/cart/order`;
+            }
+            else{
+              $('#orderModal').modal('hide');
+              document.getElementById('quantity').value = 1;
+            }
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi khi đặt hàng',
+            text: result.message || 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.',
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi khi gửi dữ liệu',
+          text: 'Có lỗi xảy ra khi gửi dữ liệu lên server. Vui lòng thử lại sau.',
+        });
+      } finally {
+        orderButton.disabled = false;
+        orderButton.innerHTML = originalButtonText;
+      }
+    }
+
+    // CSS tùy chỉnh spinner & layout responsive
+    document.head.insertAdjacentHTML('beforeend', `
+      <style>
+        .quantity-input input::-webkit-outer-spin-button,
+        .quantity-input input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        .quantity-input input[type=number] {
+          -moz-appearance: textfield;
+        }
+        .order-summary-column {
+          border-right: 1px solid #eee;
+        }
+        @media (max-width: 767.98px) {
+          .order-summary-column {
+            border-right: none;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+          }
+        }
+      </style>
+    `);

@@ -1,0 +1,119 @@
+extends ../../layouts/default.pug
+include ../../mixins/search.pug
+include ../../mixins/alert.pug
+include ../../mixins/pagination.pug
+block main
+  //- // Notifications
+  +alert(success,error)
+  h1 Đơn hàng
+  +search(keyword)
+  form(id="form-status")
+    .form-group
+      label Trạng thái
+      select.form-control(name="status")
+        option(disabled selected=selectedStatus === undefined) -- Chọn trạng thái --
+        option(value="all" selected=selectedStatus === 'all') Tất cả
+        option(value="Chờ xác nhận" selected=selectedStatus === 'Chờ xác nhận') Chờ xác nhận
+        option(value="Đang giao hàng" selected=selectedStatus === 'Đang giao hàng') Đang giao hàng
+        option(value="Đã giao hàng" selected=selectedStatus === 'Đang giao hàng') Đã giao hàng
+        option(value="Đã hủy" selected=selectedStatus === 'Đã hủy') Đã hủy
+
+  .card-body.p-0
+    .table-responsive
+      table.table.table-striped.mb-0
+        thead.bg-light
+          tr
+            th.text-center STT
+            th.text-center Mã vận đơn
+            th.text-center Tên khách hàng
+            th.text-center Số điện thoại
+            th.text-center Trạng thái đơn hàng
+            th.text-center Thời gian đặt hàng
+            th.text-center Tổng tiền
+            th.text-center Thao tác
+        tbody
+          if orders.length
+            each item, index in orders
+              tr
+                td.text-center #{index + (currentPage-1)*5 + 1}
+                td.text-center #{item.orderId}
+                td.text-center #{item.name}
+                td.text-center #{item.phone}
+                td.text-center #{item.status}                 
+                td.text-center #{item.createdAt.toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' })} #{item.createdAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                td.text-center #{item.totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                td.text-center
+                  a.btn.btn-sm.btn-warning.mr-1(href=`${prefixAdmin}/order/edit/${item.orderId}`) Sửa
+                  a.btn.btn-sm.btn-primary(href=`${prefixAdmin}/order/${item.orderId}`) Xem chi tiết
+                  button.btn.btn-sm.btn-danger(type="button", onclick=`deleteOrder('${item.orderId}')`) Xóa
+          else
+            tr
+              td(colspan="9").text-center.py-5
+                .empty-state
+                  i.fas.fa-box-open.text-muted.mb-3
+                  p.text-muted Không có đơn hàng nào.
+
+  
+  //- // Pagination footer
+  if totalPages > 1
+    .card-footer.bg-white
+      nav.d-flex.justify-content-center
+        ul.pagination.pagination-sm.mb-0
+          //- // Nút "Trước"
+          li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+            a.page-link(
+              href=`?page=${currentPage - 1}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+            )
+              i.fas.fa-angle-left
+              span.sr-only Trước
+
+          //- // Trang đầu
+          if currentPage > 3
+            li.page-item
+              a.page-link(
+                href=`?page=1${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+              ) 1
+
+          //- // Dấu ...
+          if currentPage > 4
+            li.page-item.disabled
+              span.page-link ...
+
+          //- // Các trang xung quanh trang hiện tại
+          each num in [...Array(totalPages).keys()].map(n => n + 1).filter(p => p >= currentPage - 2 && p <= currentPage + 2)
+            li.page-item(class=(num === currentPage ? 'active' : ''))
+              a.page-link(
+                href=`?page=${num}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+              ) #{num}
+
+          //- // Dấu ...
+          if currentPage < totalPages - 3
+            li.page-item.disabled
+              span.page-link ...
+
+          //- // Trang cuối
+          if currentPage < totalPages - 2
+            li.page-item
+              a.page-link(
+                href=`?page=${totalPages}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+              ) #{totalPages}
+
+          //- // Nút "Sau"
+          li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+            a.page-link(
+              href=`?page=${currentPage + 1}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+            )
+              i.fas.fa-angle-right
+              span.sr-only Sau
+
+
+  script.
+    // Thanh phân loại status
+    document.querySelector('select[name="status"]').addEventListener('change', function() {
+      const status = this.value;
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('status', status);
+      // Giữ nguyên các truy vấn cũ (keyword, page, ...)
+      if (status === 'all') urlParams.delete('status');
+      window.location.search = urlParams.toString();
+    });

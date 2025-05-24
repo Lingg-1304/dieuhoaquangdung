@@ -1,0 +1,33 @@
+extends ../../layouts/default.pug
+
+block main  
+  h1 Chi tiết đơn hàng: #{order.orderId}
+    a(href="/admin/order" class="btn btn-secondary") ← Quay lại danh sách đơn hàng
+    
+  .order-details
+    h2 Thông tin khách hàng
+    ul
+      li Họ tên: #{order.name}
+      li Email: #{order.email}
+      li Số điện thoại: #{order.phone}
+      li Địa chỉ: #{order.address}
+      li Ghi chú: #{order.note}
+      li Phương thức thanh toán: #{order.paymentMethod}
+      li Trạng thái: #{order.status}
+      li Ngày tạo: #{new Date(order.createdAt).toLocaleString()}
+
+    h2 Sản phẩm đã đặt
+    table(border="1" cellspacing="0" cellpadding="8")
+      thead
+        tr
+          th STT
+          th Tên sản phẩm (slug)
+          th Số lượng
+      tbody
+        each item, index in order.items
+          tr
+            td #{index + 1}
+            td #{item.slug}
+            td #{item.quantity}
+
+    h3 Tổng tiền: #{order.totalPrice.toLocaleString('vi-VN')}₫  

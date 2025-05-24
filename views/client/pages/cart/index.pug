@@ -2,16 +2,19 @@ extends ../../layouts/default.pug
 
 block main
   .container.py-5
+    a(href="/cart/order")
+      h1.mb-4 Đơn hàng của bạn 
+
     h1.mb-4 Giỏ hàng
     
-    if cart && cart.length
+    if products && products.length
       form#cartForm.needs-validation(action="/cart/buy", method="post", novalidate)
         .card.mb-4
           .card-header.bg-light
-            h5.mb-0 Sản phẩm (#{cart.length})
+            h5.mb-0 Sản phẩm (#{products.length})
           .card-body
-            each item, index in cart
-              .row.py-3.align-items-center(class=index < cart.length-1 ? "border-bottom" : "", id=`item-${item.slug}`)
+            each item, index in products
+              .row.py-3.align-items-center(class=index < products.length-1 ? "border-bottom" : "")
                 .col-md-1
                   .form-check
                     input.form-check-input(type="checkbox", name="selectedItems", value=item.slug, id=`item-${index}`)
@@ -29,7 +32,7 @@ block main
                     .input-group-append
                       button.btn.btn-outline-secondary(type="button", onclick=`incrementQuantity('quantity-${index}')`) +
                 .col-md-2
-                  button.btn.btn-sm.btn-outline-danger.mt-2(type="button", onclick=`removeItem('${item.slug}')`)
+                  button.btn.btn-sm.btn-outline-danger.mt-2(type="button", onclick=`removeFromCart('${item.slug}')`)
                     i.fa.fa-trash.mr-1
                     | Xóa
             
@@ -66,35 +69,122 @@ block main
         
         // Overlay và popup
         #overlay.d-none
-        #addressPopup.d-none
-          .card
-            .card-header.bg-primary.text-white
-              h5.mb-0 Thông tin giao hàng
-            .card-body
-              .form-group
-                label(for="popup-name") Họ và tên
-                input#popup-name.form-control(type="text", required)
-                .invalid-feedback Vui lòng nhập họ tên
+        #checkoutModal.d-none.modal-container
+          .checkout-modal
+            .modal-header
+              h4.mb-0 Thông tin giao hàng
+              button.close-btn(type="button", onclick="closePopup()") ×
+            
+            .checkout-progress
+              .progress-step.active
+                .step-number 1
+                .step-label Thông tin
+              .progress-connector
+              .progress-step
+                .step-number 2
+                .step-label Xác nhận
+              .progress-connector
+              .progress-step
+                .step-number 3
+                .step-label Hoàn tất
+            
+            .modal-body
+              // Tab thông tin giao hàng
+              #shipping-tab.checkout-tab.active
+                .form-group
+                  label(for="popup-name") Họ và tên
+                  input#popup-name.form-control(type="text", required)
+                  .invalid-feedback Vui lòng nhập họ tên
+                
+                .form-row
+                  .form-group.col-md-6
+                    label(for="popup-phone") Số điện thoại
+                    .input-group
+                      .input-group-prepend
+                        span.input-group-text
+                          i.fa.fa-phone
+                      input#popup-phone.form-control(type="tel", required, pattern="[0-9]{10}")
+                      .invalid-feedback Vui lòng nhập số điện thoại hợp lệ (10 số)
+                  
+                  .form-group.col-md-6
+                    label(for="popup-email") Email (không bắt buộc)
+                    .input-group
+                      .input-group-prepend
+                        span.input-group-text
+                          i.fa.fa-envelope
+                      input#popup-email.form-control(type="email")
+                
+                .form-group
+                  label(for="popup-address") Địa chỉ giao hàng
+                  textarea#popup-address.form-control(rows="3", required)
+                  .invalid-feedback Vui lòng nhập địa chỉ giao hàng
+                
+                .form-group
+                  label(for="popup-note") Ghi chú đơn hàng (không bắt buộc)
+                  textarea#popup-note.form-control(rows="2", placeholder="Ví dụ: Thời gian giao hàng, hướng dẫn giao hàng...")
+                
+                .form-check.mb-3.border-top.pt-3.mt-3
+                  input#save-info.form-check-input(type="checkbox", checked) 
+                  label.form-check-label(for="save-info") Lưu thông tin cho lần mua hàng sau
               
-              .form-group
-                label(for="popup-phone") Số điện thoại
-                input#popup-phone.form-control(type="tel", required, pattern="[0-9]{10}")
-                .invalid-feedback Vui lòng nhập số điện thoại hợp lệ (10 số)
+              // Tab xác nhận
+              #confirm-tab.checkout-tab
+                .order-summary
+                  h5.mb-3 Đơn hàng của bạn
+                  #selected-products.mb-4
+                    // Sản phẩm đã chọn sẽ được render ở đây
+                  
+                  .order-totals
+                    .d-flex.justify-content-between.mb-2
+                      span Tạm tính:
+                      span#confirm-subtotal 0 ₫
+                    .d-flex.justify-content-between.mb-2
+                      span Phí vận chuyển:
+                      span#confirm-shipping 0 ₫
+                    .d-flex.justify-content-between.font-weight-bold.border-top.pt-2.mt-2
+                      span Tổng thanh toán:
+                      span#confirm-total.text-danger 0 ₫
+                
+                .payment-method-summary.mt-4
+                  h5.mb-3 Phương thức thanh toán
+                  #payment-method-display
+                    // Phương thức thanh toán đã chọn
+                
+                .shipping-info-summary.mt-4
+                  h5.mb-3 Thông tin giao hàng
+                  #customer-info-display
+                    // Thông tin khách hàng
               
-              .form-group
-                label(for="popup-address") Địa chỉ giao hàng
-                textarea#popup-address.form-control(rows="3", required)
-                .invalid-feedback Vui lòng nhập địa chỉ giao hàng
+              // Tab hoàn tất
+              #complete-tab.checkout-tab.text-center
+                .success-icon
+                  i.fa.fa-check-circle.fa-5x.text-success
+                h4.mt-3.mb-3 Đặt hàng thành công!
+                p.mb-4 Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.
+                p#order-code.font-weight-bold.mb-4 Mã đơn hàng: #DH12345
+                a.btn.btn-outline-primary(href="/products")
+                  i.fa.fa-shopping-cart.mr-2
+                  | Tiếp tục mua sắm
+            
+            .modal-footer
+              #shipping-buttons.step-buttons.active
+                button.btn.btn-outline-secondary(type="button", onclick="closePopup()") Hủy
+                button.btn.btn-primary(type="button", onclick="validateAndGoToConfirm()") 
+                  | Tiếp tục
+                  i.fa.fa-arrow-right.ml-2
               
-              .form-group
-                label(for="popup-note") Ghi chú (không bắt buộc)
-                textarea#popup-note.form-control(rows="2")
-              
-              .d-flex.justify-content-end.mt-4
-                button.btn.btn-outline-secondary.mr-2(type="button", onclick="closePopup()") Hủy
-                button.btn.btn-success(type="button", onclick="submitForm()")
-                  i.fa.fa-check.mr-1
+              #confirm-buttons.step-buttons
+                button.btn.btn-outline-secondary(type="button", onclick="backToShipping()")
+                  i.fa.fa-arrow-left.mr-2
+                  | Quay lại
+                button.btn.btn-success(type="button", onclick="submitOrder()")
+                  i.fa.fa-check.mr-2
                   | Xác nhận đặt hàng
+              
+              #complete-buttons.step-buttons
+                button.btn.btn-primary(type="button", onclick="closePopup()")
+                  i.fa.fa-home.mr-2
+                  | Đóng
     else
       .text-center.py-5
         i.fa.fa-shopping-cart.fa-4x.text-muted.mb-3
@@ -104,36 +194,162 @@ block main
           i.fa.fa-arrow-left.mr-2
           | Tiếp tục mua sắm
 
-  script.
-    // Xóa sản phẩm
-    function removeItem(slug) {
-      if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
-        // Gửi yêu cầu xóa đến server
-        fetch(`/cart/remove/${slug}`, {
-          method: 'POST',
-        })
-          .then(response => response.json()) // Giả sử server trả về một JSON để xác nhận
-          .then(data => {
-            if (data.success) {
-              // Cập nhật lại giỏ hàng sau khi xóa sản phẩm
-              // Xóa phần tử khỏi DOM
-              const itemRow = document.querySelector(`#item-${slug}`);
-              if (itemRow) {
-                itemRow.remove();
-              }
-              // Cập nhật lại tổng tiền sau khi xóa
-              calculateTotal();
-            } else {
-              alert('Không thể xóa sản phẩm này');
-            }
-          })
-          .catch(error => {
-            console.error('Lỗi khi xóa sản phẩm:', error);
-            alert('Có lỗi xảy ra, vui lòng thử lại');
-          });
-      }
+  style.
+    .modal-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1050;
+    }
+    
+    .checkout-modal {
+      background: white;
+      border-radius: 8px;
+      width: 650px;
+      max-width: 95%;
+      max-height: 95vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .modal-header {
+      background: #4285f4;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+    
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+    
+    .checkout-progress {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+    
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    
+    .step-number {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #e9ecef;
+      color: #6c757d;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      margin-bottom: 5px;
+      transition: all 0.3s;
+    }
+    
+    .progress-step.active .step-number {
+      background: #4285f4;
+      color: white;
+    }
+    
+    .progress-step.completed .step-number {
+      background: #28a745;
+      color: white;
+    }
+    
+    .step-label {
+      font-size: 12px;
+      color: #6c757d;
+    }
+    
+    .progress-step.active .step-label {
+      color: #4285f4;
+      font-weight: bold;
+    }
+    
+    .progress-connector {
+      width: 60px;
+      height: 2px;
+      background: #e9ecef;
+      margin: 0 10px;
+      margin-bottom: 20px;
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .modal-footer {
+      padding: 15px 20px;
+      border-top: 1px solid #e9ecef;
+    }
+    
+    .checkout-tab {
+      display: none;
+    }
+    
+    .checkout-tab.active {
+      display: block;
+    }
+    
+    .step-buttons {
+      display: none;
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    .step-buttons.active {
+      display: flex;
+    }
+    
+    .success-icon {
+      margin: 20px 0;
+    }
+    
+    .order-summary, .payment-method-summary, .shipping-info-summary {
+      background: #f8f9fa;
+      border-radius: 4px;
+      padding: 15px;
+    }
+    
+    .order-item {
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .order-item:last-child {
+      border-bottom: none;
     }
 
+  script.
+    
     // Các biến để lưu trữ tổng tiền
     let subtotal = 0;
     const shippingFee = 30000;
@@ -153,6 +369,9 @@ block main
       quantityInputs.forEach(input => {
         input.addEventListener('change', calculateTotal);
       });
+      
+      // Kiểm tra nếu có thông tin đã lưu
+      loadSavedCustomerInfo();
     });
     
     // Tăng số lượng
@@ -172,20 +391,6 @@ block main
       }
     }
     
-    // Xóa sản phẩm
-    function removeItem(slug) {
-      if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
-        // Gửi yêu cầu xóa đến server
-        fetch(`/cart/remove/${slug}`, {
-          method: 'POST',
-        }).then(response => {
-          if (response.ok) {
-            window.location.reload();
-          }
-        });
-      }
-    }
-    
     // Tính tổng tiền
     function calculateTotal() {
       subtotal = 0;
@@ -196,7 +401,7 @@ block main
           const quantityInput = document.getElementById(`quantity-${index}`);
           const quantity = parseInt(quantityInput.value);
           
-          // Lấy giá từ phần tử HTML (cần điều chỉnh tùy vào cấu trúc thực tế)
+          // Lấy giá từ phần tử HTML
           const priceText = checkbox.closest('.row').querySelector('.text-danger').innerText;
           const price = parseInt(priceText.replace(/[^\d]/g, ''));
           
@@ -222,7 +427,12 @@ block main
       const selectedItems = document.querySelectorAll('input[name="selectedItems"]:checked');
       
       if (selectedItems.length === 0) {
-        alert('Vui lòng chọn ít nhất một sản phẩm để tiến hành đặt hàng');
+        Swal.fire({
+          icon: 'warning',
+          title: 'Giỏ hàng trống',
+          text: 'Vui lòng chọn ít nhất một sản phẩm để tiến hành đặt hàng',
+          confirmButtonColor: '#4285f4'
+        });
         return;
       }
       
@@ -234,23 +444,55 @@ block main
       document.getElementById('overlay').className = 'position-fixed top-0 left-0 w-100 h-100 bg-dark';
       document.getElementById('overlay').style = 'opacity: 0.5; z-index: 1040;';
       
-      const popup = document.getElementById('addressPopup');
-      popup.className = 'position-fixed bg-white';
-      popup.style = 'top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050; width: 500px; max-width: 95%;';
+      // Reset về tab đầu tiên
+      showTab('shipping');
+      
+      const modal = document.getElementById('checkoutModal');
+      modal.className = 'modal-container';
     }
     
     // Đóng popup
     function closePopup() {
       document.getElementById('overlay').className = 'd-none';
-      document.getElementById('addressPopup').className = 'd-none';
+      document.getElementById('checkoutModal').className = 'd-none';
     }
     
-    // Gửi form
-    function submitForm() {
+    // Chuyển giữa các tab
+    function showTab(tabName) {
+      // Ẩn tất cả tab và buttons
+      document.querySelectorAll('.checkout-tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.step-buttons').forEach(btn => btn.classList.remove('active'));
+      
+      // Hiển thị tab được chọn
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+      document.getElementById(`${tabName}-buttons`).classList.add('active');
+      
+      // Cập nhật trạng thái progress steps
+      updateProgressSteps(tabName);
+    }
+    
+    // Cập nhật hiển thị các bước tiến độ
+    function updateProgressSteps(currentStep) {
+      const steps = document.querySelectorAll('.progress-step');
+      steps.forEach(step => step.classList.remove('active', 'completed'));
+      
+      if (currentStep === 'shipping') {
+        steps[0].classList.add('active');
+      } else if (currentStep === 'confirm') {
+        steps[0].classList.add('completed');
+        steps[1].classList.add('active');
+      } else if (currentStep === 'complete') {
+        steps[0].classList.add('completed');
+        steps[1].classList.add('completed');
+        steps[2].classList.add('active');
+      }
+    }
+    
+    // Xác thực và chuyển đến tab Xác nhận
+    function validateAndGoToConfirm() {
       const name = document.getElementById('popup-name').value.trim();
       const phone = document.getElementById('popup-phone').value.trim();
       const address = document.getElementById('popup-address').value.trim();
-      const note = document.getElementById('popup-note').value.trim();
       
       // Kiểm tra hợp lệ
       let valid = true;
@@ -278,16 +520,120 @@ block main
       
       if (!valid) return;
       
-      // Thêm các trường vào form
+      // Lưu thông tin nếu được chọn
+      if (document.getElementById('save-info').checked) {
+        saveCustomerInfo();
+      }
+      
+      // Hiển thị thông tin sản phẩm đã chọn
+      renderSelectedProducts();
+      
+      // Hiển thị thông tin thanh toán
+      document.getElementById('confirm-subtotal').innerText = document.getElementById('subtotal').innerText;
+      document.getElementById('confirm-shipping').innerText = document.getElementById('shipping').innerText;
+      document.getElementById('confirm-total').innerText = document.getElementById('total').innerText;
+      
+      // Hiển thị phương thức thanh toán
+      const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+      document.getElementById('payment-method-display').innerHTML = `
+        <div class="card border-0 bg-light">
+          <div class="card-body py-2">
+            <i class="fa fa-${paymentMethod === 'cod' ? 'money' : 'bank'} mr-2"></i>
+            ${paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản ngân hàng'}
+          </div>
+        </div>
+      `;
+      
+      // Hiển thị thông tin khách hàng
+      const email = document.getElementById('popup-email').value.trim();
+      const note = document.getElementById('popup-note').value.trim();
+      
+      document.getElementById('customer-info-display').innerHTML = `
+        <div class="card border-0 bg-light">
+          <div class="card-body py-2">
+            <p class="mb-1"><strong>Họ tên:</strong> ${name}</p>
+            <p class="mb-1"><strong>Số điện thoại:</strong> ${phone}</p>
+            ${email ? `<p class="mb-1"><strong>Email:</strong> ${email}</p>` : ''}
+            <p class="mb-1"><strong>Địa chỉ:</strong> ${address}</p>
+            ${note ? `<p class="mb-1"><strong>Ghi chú:</strong> ${note}</p>` : ''}
+          </div>
+        </div>
+      `;
+      
+      // Chuyển sang tab xác nhận
+      showTab('confirm');
+    }
+    
+    // Quay lại tab thông tin giao hàng
+    function backToShipping() {
+      showTab('shipping');
+    }
+    
+    // Hiển thị sản phẩm đã chọn ở tab xác nhận
+    function renderSelectedProducts() {
+      const selectedItems = document.querySelectorAll('input[name="selectedItems"]:checked');
+      let html = '';
+      
+      selectedItems.forEach((checkbox, index) => {
+        const row = checkbox.closest('.row');
+        const title = row.querySelector('.form-check-label').innerText;
+        const price = row.querySelector('.text-danger').innerText;
+        const quantityInput = document.getElementById(`quantity-${index}`);
+        const quantity = parseInt(quantityInput.value);
+        
+        html += `
+          <div class="order-item d-flex justify-content-between align-items-center">
+            <div>
+              <span class="font-weight-bold">${title}</span>
+              <br>
+              <span class="text-muted">SL: ${quantity}</span>
+            </div>
+            <span class="text-danger">${price}</span>
+          </div>
+        `;
+      });
+      
+      document.getElementById('selected-products').innerHTML = html;
+    }
+    
+    // Lưu thông tin khách hàng vào localStorage
+    function saveCustomerInfo() {
+      const customerInfo = {
+        name: document.getElementById('popup-name').value.trim(),
+        phone: document.getElementById('popup-phone').value.trim(),
+        email: document.getElementById('popup-email').value.trim(),
+        address: document.getElementById('popup-address').value.trim()
+      };
+      
+      localStorage.setItem('customerInfo', JSON.stringify(customerInfo));
+    }
+    
+    // Tải thông tin khách hàng từ localStorage
+    function loadSavedCustomerInfo() {
+      const savedInfo = localStorage.getItem('customerInfo');
+      
+      if (savedInfo) {
+        const customerInfo = JSON.parse(savedInfo);
+        
+        document.getElementById('popup-name').value = customerInfo.name || '';
+        document.getElementById('popup-phone').value = customerInfo.phone || '';
+        document.getElementById('popup-email').value = customerInfo.email || '';
+        document.getElementById('popup-address').value = customerInfo.address || '';
+      }
+    }
+    
+    // Gửi form đặt hàng
+    function submitOrder() {
       const form = document.getElementById('cartForm');
-      
+
       const hiddenFields = [
-        { name: 'customerName', value: name },
-        { name: 'customerPhone', value: phone },
-        { name: 'customerAddress', value: address },
-        { name: 'customerNote', value: note }
+        { name: 'customerName', value: document.getElementById('popup-name').value.trim() },
+        { name: 'customerPhone', value: document.getElementById('popup-phone').value.trim() },
+        { name: 'customerEmail', value: document.getElementById('popup-email').value.trim() },
+        { name: 'customerAddress', value: document.getElementById('popup-address').value.trim() },
+        { name: 'customerNote', value: document.getElementById('popup-note').value.trim() }
       ];
-      
+
       hiddenFields.forEach(({ name, value }) => {
         let input = document.querySelector(`input[name="${name}"]`);
         if (!input) {
@@ -298,7 +644,29 @@ block main
         }
         input.value = value;
       });
-      
-      // Gửi form
-      form.submit();
+
+      // Tạo mã đơn hàng và hiển thị
+      const orderCode = generateOrderCode();
+      document.getElementById('order-code').innerText = `Mã đơn hàng: ${orderCode}`;
+      showTab('complete');
+
+      // Gửi thông tin qua fetch
+      const formData = new FormData(form);
+      formData.append('orderCode', orderCode); // ✅ thêm orderCode vào formData
+
+      // Thêm subtotal vào form gửi
+      const subtotalValue = document.getElementById('subtotal').innerText.replace(/[^\d]/g, '');
+      formData.append('subtotal', subtotalValue);
+
+      fetch('/cart/buy', {
+        method: 'POST',
+        body: formData
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error('Có lỗi xảy ra khi đặt hàng');
+        }
+        return response.json();
+      }).catch(error => {
+        console.error('Lỗi:', error);
+      });
     }

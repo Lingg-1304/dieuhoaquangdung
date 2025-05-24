@@ -1,4 +1,6 @@
 const Product = require("../../models/product-model");
+const sharp = require("sharp");
+const path = require("path");
 
 const systemConfig = require("../../config/system");
 
@@ -68,21 +70,43 @@ module.exports.createGet = async (req, res) => {
   });
 };
 module.exports.createPost = async (req, res) => {
-  const product = req.body;
-  product.newPrice = Math.round(
-    (product.price * (100 - product.discountPercentage)) / 100
-  );
-  const products = await Product.find({ deleted: false });
-  product.thumbnail = `/uploads/${req.file.filename}`;
-  product.position = products.length;
-  product.features = product.features
-    .split("\n")
-    .map((f) => f.trim())
-    .filter((f) => f);
-  // console.log(products.length);
-  await new Product(product).save();
-  req.flash("success", "Thêm sản phẩm thành công");
-  res.redirect(`${systemConfig.prefixAdmin}/products/create`);
+  try {
+    const filename = `product_${Date.now()}.jpg`;
+    const filepath = path.join(__dirname, "../../public/uploads", filename);
+
+    // Crop ảnh trước khi lưu
+    if (req.file) {
+      await sharp(req.file.buffer)
+        .resize(400, 300, {
+          fit: "contain", // Thay 'cover' bằng 'contain' để giữ nguyên tỷ lệ
+          background: { r: 255, g: 255, b: 255, alpha: 1 }, // Thêm màu nền trắng (hoặc màu khác tùy chọn)
+        })
+        .toFile(filepath);
+    }
+
+    const products = await Product.find({ deleted: false });
+
+    const product = {
+      ...req.body,
+      thumbnail: req.file ? `/uploads/${filename}` : "/uploads/default.jpg",
+      newPrice: Math.round(
+        (req.body.price * (100 - req.body.discountPercentage)) / 100
+      ),
+      position: products.length,
+      features: (req.body.features || "")
+        .split("\n")
+        .map((f) => f.trim())
+        .filter((f) => f),
+    };
+
+    await new Product(product).save();
+    req.flash("success", "Thêm sản phẩm thành công");
+    res.redirect("/admin/products/create");
+  } catch (err) {
+    console.error(err);
+    req.flash("error", "Có lỗi xảy ra");
+    res.redirect("/admin/products/create");
+  }
 };
 
 // [POST] --> /admin/products/change-status/:status/:id
@@ -124,7 +148,17 @@ module.exports.editPost = async (req, res) => {
   const id = req.params.id;
   const item = req.body;
   if (req.file) {
-    item.thumbnail = `/uploads/${req.file.filename}`;
+    const filename = `product_${Date.now()}.jpg`;
+    const filepath = path.join(__dirname, "../../public/uploads", filename);
+
+    // Crop ảnh trước khi lưu
+    await sharp(req.file.buffer)
+      .resize(400, 300, {
+        fit: "contain", // Thay 'cover' bằng 'contain' để giữ nguyên tỷ lệ
+        background: { r: 255, g: 255, b: 255, alpha: 1 }, // Thêm màu nền trắng (hoặc màu khác tùy chọn)
+      })
+      .toFile(filepath);
+    item.thumbnail = `/uploads/${filename}`;
   }
   item.newPrice = Math.round(
     (item.price * (100 - item.discountPercentage)) / 100

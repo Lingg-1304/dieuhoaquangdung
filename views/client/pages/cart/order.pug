@@ -1,0 +1,121 @@
+extends ../../layouts/default.pug
+
+block main
+  .container.py-5
+    .row.mb-4
+      .col
+        h1.fw-bold.text-primary.mb-2 Đơn hàng của bạn
+        p.text-secondary.fs-5 Quản lý và theo dõi đơn hàng của bạn tại đây
+
+    if order.length > 0
+      .row.mb-4
+        .col-12
+          .card.border-0.shadow-sm.bg-light
+            .card-body.p-4
+              .d-flex.align-items-center
+                i.bi.bi-info-circle.fs-4.me-3.text-primary
+                p.mb-0.fs-5 Bạn có #{order.length} đơn hàng trong hệ thống
+
+      each o, i in order
+        .card.border-0.shadow-sm.mb-4.order-card
+          .card-header.bg-white.border-bottom.py-3
+            .d-flex.justify-content-between.align-items-center
+              .d-flex.align-items-center
+                h3.fs-5.fw-bold.mb-0.text-dark #{i + 1}. #{o.orderId}
+              .d-flex.gap-2
+                button.btn.btn-outline-secondary.btn-sm(type="button", onclick=`editOrder('${o.orderId}', '${o.name}', '${o.email}', '${o.address}', '${o.phone}', '${o.note}')`)
+                  i.bi.bi-pencil-square.me-1
+                  | Chỉnh sửa
+                button.btn.btn-outline-danger.btn-sm(type="button", onclick=`deleteOrder('${o.orderId}', '${o.status}')`)
+                  i.bi.bi-trash.me-1
+                  | Xóa
+
+          .card-body.p-4
+            .row
+              .col-lg-4.mb-4.mb-lg-0
+                .d-flex.align-items-center.mb-3
+                  i.bi.bi-person-circle.fs-4.text-primary.me-2
+                  h4.fs-5.fw-bold.mb-0 Thông tin người nhận
+                
+                .bg-light.rounded-3.p-3
+                  .mb-2.d-flex
+                    span.text-secondary.fw-bold.me-2.col-4 Họ tên:
+                    span.col #{o.name}
+                  .mb-2.d-flex
+                    span.text-secondary.fw-bold.me-2.col-4 Điện thoại:
+                    span.col #{o.phone}
+                  .mb-2.d-flex
+                    span.text-secondary.fw-bold.me-2.col-4 Email:
+                    span.col #{o.email || "Không có"}
+                  .mb-2.d-flex
+                    span.text-secondary.fw-bold.me-2.col-4 Địa chỉ:
+                    span.col #{o.address}
+                  .mb-2.d-flex
+                    span.text-secondary.fw-bold.me-2.col-4 Thanh toán:
+                    span.col #{o.paymentMethod}
+                  .d-flex
+                    span.text-secondary.fw-bold.me-2.col-4 Ghi chú:
+                    span.col #{o.note || "Không có"}
+
+              .col-lg-8
+                .d-flex.align-items-center.mb-3
+                  i.bi.bi-box2.fs-4.text-primary.me-2
+                  h4.fs-5.fw-bold.mb-0 Chi tiết đơn hàng
+                
+                .table-responsive.mb-3
+                  table.table.table-hover.table-borderless.bg-light.rounded-3
+                    thead
+                      tr.table-light
+                        th.border-0 Sản phẩm
+                        th.text-center.border-0 Giá
+                        th.text-center.border-0 Số lượng
+                    tbody
+                      each item in o.items
+                        tr
+                          td.py-3
+                            a.text-decoration-none.text-primary.fw-medium(href=`/products/${item.slug}`) #{item.product.title}
+                          td.text-center.py-3
+                            span.text-secondary #{item.product.newPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                          td.text-center.py-3 #{item.quantity}
+                
+                .d-flex.justify-content-between.align-items-center.py-3.px-4.bg-light.rounded-3
+                  .d-flex.align-items-center
+                    span.badge.rounded-pill(class=`bg-${o.status === 'Đã giao hàng' ? 'success' : o.status === 'Đang xử lý' ? 'warning' : 'info'}`) #{o.status}
+                  .text-end
+                    p.mb-0.fs-5.fw-bold.text-dark
+                      | Tổng tiền: 
+                      span.text-primary #{o.totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+          
+          .card-footer.bg-white.border-0.text-end.text-secondary.py-3
+            small.d-block.mb-1
+              i.bi.bi-calendar3.me-1
+              | Ngày đặt: #{new Date(o.createdAt).toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+            small
+              i.bi.bi-tag.me-1
+              | Mã đơn hàng: #{o.orderId}
+
+    else
+      .row.justify-content-center.py-5
+        .col-md-8.text-center
+          .empty-orders.py-5
+            i.bi.bi-cart-x.display-1.text-secondary.mb-4.d-block
+            h3.text-secondary.mb-3 Bạn chưa có đơn hàng nào
+            p.text-muted.mb-4 Hãy thêm sản phẩm vào giỏ hàng và tiến hành thanh toán
+            a.btn.btn-primary.px-4.py-2(href="/products")
+              i.bi.bi-shop.me-2
+              | Khám phá sản phẩm
+
+  style.
+    .order-card {
+      transition: transform 0.2s ease;
+    }
+    .order-card:hover {
+      transform: translateY(-3px);
+    }
+    .empty-orders {
+      animation: fadeIn 0.5s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }

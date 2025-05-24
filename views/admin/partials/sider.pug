@@ -23,8 +23,8 @@ aside#adminSidebar.sider-admin.d-flex.flex-column(
       | Sản phẩm
 
     a.nav-link.d-flex.align-items-center.rounded.mb-1.px-3.py-2(
-      href=prefixAdmin + '/cart',
-      class=(currentPath.startsWith(prefixAdmin + '/blogs') ? 'active' : '')
+      href=prefixAdmin + '/order',
+      class=(currentPath.startsWith(prefixAdmin + '/order') ? 'active' : '')
     )
       i.fas.fa-newspaper.mr-3
       | Đơn hàng
@@ -35,3 +35,10 @@ aside#adminSidebar.sider-admin.d-flex.flex-column(
     )
       i.fas.fa-newspaper.mr-3
       | Bài viết
+
+    a.nav-link.d-flex.align-items-center.rounded.mb-1.px-3.py-2(
+      href=prefixAdmin + '/setting',
+      class=(currentPath.startsWith(prefixAdmin + '/setting') ? 'active' : '')
+    )
+      i.fas.fa-cog.mr-3
+      | Cài đặt 

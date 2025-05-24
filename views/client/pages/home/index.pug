@@ -12,24 +12,24 @@ block main
         
         .carousel-inner
           .carousel-item.active
-            img.d-block.w-100(src="https://api-shop.daikin.com.vn:60443/storage/upload/media/KMs/June/Daikinday/daikin-kv-1920x650-1.png" alt="Banner 1")
+            img(loading="lazy" src="/uploads/banner-1.png" alt="Banner 1")
             .carousel-caption
-              h2.display-4 Điều hòa cao cấp
-              p.lead Công nghệ Inverter tiết kiệm năng lượng
-              a.btn.btn-primary.btn-lg(href="/products") Mua ngay
+              //- h2.display-4 Điều hòa cao cấp
+              //- p.lead Công nghệ Inverter tiết kiệm năng lượng
+              //- a.btn.btn-primary.btn-lg(href="/products") Mua ngay
           
           .carousel-item
-            img.d-block.w-100(src="https://dieuhoa.top/wp-content/uploads/2022/07/dieu-hoa-daikin-banner.jpg" alt="Banner 2")
+            img(src="https://dieuhoa.top/wp-content/uploads/2022/07/dieu-hoa-daikin-banner.jpg" alt="Banner 2")
             .carousel-caption
-              h2.display-4 Giảm đến 30%
-              p.lead Chương trình khuyến mãi mùa hè
+              //- h2.display-4 Giảm đến 30%
+              //- p.lead Chương trình khuyến mãi mùa hè
               //- a.btn.btn-danger.btn-lg(href="/products/sale") Xem ưu đãi
           
           .carousel-item
-            img.d-block.w-100(src="https://api-shop.daikin.com.vn:60443/storage/upload/media/dk-15-steps-home-1.jpg" alt="Banner 3")
+            img(src="https://api-shop.daikin.com.vn:60443/storage/upload/media/dk-15-steps-home-1.jpg" alt="Banner 3")
             .carousel-caption
-              h2.display-4 Dịch vụ lắp đặt miễn phí
-              p.lead Đội ngũ kỹ thuật chuyên nghiệp
+              //- h2.display-4 Dịch vụ lắp đặt miễn phí
+              //- p.lead Đội ngũ kỹ thuật chuyên nghiệp
               //- a.btn.btn-success.btn-lg(href="/services") Tìm hiểu thêm
         
         a.carousel-control-prev(href="#homeBanner" role="button" data-slide="prev")
@@ -41,21 +41,21 @@ block main
           span.sr-only Tiếp
 
   // Category Section
-  section.category-section.py-5.bg-light
-    .container
-      h2.text-center.mb-4 Danh mục sản phẩm
-      .row
-        - const categories = [{ name: 'Điều hòa dân dụng', icon: 'fa-snowflake', color: '#4A89DC' }, { name: 'Điều hòa công nghiệp', icon: 'fa-industry', color: '#967ADC' }, { name: 'Điều hòa âm trần', icon: 'fa-square', color: '#D770AD' }, { name: 'Phụ kiện', icon: 'fa-tools', color: '#F6BB42' }]
-        each category in categories
-          .col-md-3.col-6.mb-4
-            a.text-decoration-none(href="/products/category/" + category.name.toLowerCase().replace(/\s+/g, '-'))
-              .card.border-0.text-center.h-100
-                .card-body.py-4
-                  .mb-3
-                    .category-icon.mx-auto.rounded-circle.d-flex.align-items-center.justify-content-center(style=`background-color: ${category.color}`)
-                      i.fas.fa-2x.text-white(class=category.icon)
-                  h5.card-title= category.name
-                  p.card-text.text-muted Khám phá sản phẩm
+  //- section.category-section.py-5.bg-light
+  //-   .container
+  //-     h2.text-center.mb-4 Danh mục sản phẩm
+  //-     .row
+  //-       - const categories = [{ name: 'Điều hòa dân dụng', icon: 'fa-snowflake', color: '#4A89DC' }, { name: 'Điều hòa công nghiệp', icon: 'fa-industry', color: '#967ADC' }, { name: 'Điều hòa âm trần', icon: 'fa-square', color: '#D770AD' }, { name: 'Phụ kiện', icon: 'fa-tools', color: '#F6BB42' }]
+  //-       each category in categories
+  //-         .col-md-3.col-6.mb-4
+  //-           a.text-decoration-none(href="/products/category/" + category.name.toLowerCase().replace(/\s+/g, '-'))
+  //-             .card.border-0.text-center.h-100
+  //-               .card-body.py-4
+  //-                 .mb-3
+  //-                   .category-icon.mx-auto.rounded-circle.d-flex.align-items-center.justify-content-center(style=`background-color: ${category.color}`)
+  //-                     i.fas.fa-2x.text-white(class=category.icon)
+  //-                 h5.card-title= category.name
+  //-                 p.card-text.text-muted Khám phá sản phẩm
 
   // Featured Products
   section.featured-section.py-5
@@ -71,7 +71,7 @@ block main
               .position-relative
                 if product.discountPercentage > 0
                   span.badge.badge-danger.position-absolute.m-2 -#{Math.round(product.discountPercentage)}%
-                img.card-img-top.p-3(style="width: 100%; height: 200px; object-fit: cover;" src=product.thumbnail alt=product.title)
+                img.card-img-top.p-3(src=product.thumbnail alt=product.title)
               .card-body.pb-0
                 h5.card-title= product.title
                 .mb-2
@@ -90,6 +90,7 @@ block main
               .card-footer.bg-white.border-top-0.pt-0
                 .d-grid
                   a.btn.btn-sm.btn-outline-primary.btn-block(href=`/products/${product.slug}`) Xem chi tiết
+                  button.btn.btn-sm.btn-primary.btn-block(type="button", onclick=`addToCart('${product.slug}')`) Thêm vào giỏ hàng
 
   // Benefits Section
   section.benefits-section.py-5.bg-light
@@ -137,7 +138,7 @@ block main
                       i.text-warning ☆
               .card-footer.bg-white.border-top-0.pt-0
                 .d-grid
-                  a.btn.btn-sm.btn-outline-primary.btn-block(href=`/products/${product.title.toLowerCase().replace(/\s+/g, '-')}`) Xem chi tiết
+                  a.btn.btn-sm.btn-outline-primary.btn-block(href=`/products/${product.slug}`) Xem chi tiết
 
   // Testimonials
   section.testimonials-section.py-5.bg-light
@@ -218,8 +219,8 @@ block main
     
     style. 
         #homeBanner img {
-            max-height: 450px; /* Hoặc chiều cao bạn muốn, ví dụ 300px, 500px */
-            object-fit: cover;
+            width: 100%;
+            height: auto;
         }
 
     

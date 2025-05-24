@@ -1,0 +1,53 @@
+mixin pagination(totalPages, currentPage, status, keyword)
+    if totalPages > 1
+        .card-footer.bg-white
+          nav.d-flex.justify-content-center
+            ul.pagination.pagination-sm.mb-0
+              //- // Nút "Trước"
+              li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+                a.page-link(
+                  href=`?page=${currentPage - 1}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                )
+                  i.fas.fa-angle-left
+                  span.sr-only Trước
+
+              //- // Trang đầu
+              if currentPage > 3
+                li.page-item
+                  a.page-link(
+                    href=`?page=1${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                  ) 1
+
+              //- // Dấu ...
+              if currentPage > 4
+                li.page-item.disabled
+                  span.page-link ...
+
+              //- // Các trang xung quanh trang hiện tại
+              each num in [...Array(totalPages).keys()].map(n => n + 1).filter(p => p >= currentPage - 2 && p <= currentPage + 2)
+                li.page-item(class=(num === currentPage ? 'active' : ''))
+                  a.page-link(
+                    href=`?page=${num}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                  ) #{num}
+
+              //- // Dấu ...
+              if currentPage < totalPages - 3
+                li.page-item.disabled
+                  span.page-link ...
+
+              //- // Trang cuối
+              if currentPage < totalPages - 2
+                li.page-item
+                  a.page-link(
+                    href=`?page=${totalPages}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                  ) #{totalPages}
+
+              //- // Nút "Sau"
+              li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+                a.page-link(
+                  href=`?page=${currentPage + 1}${status ? `&status=${status}` : ''}${keyword ? `&keyword=${keyword}` : ''}`
+                )
+                  i.fas.fa-angle-right
+                  span.sr-only Sau
+
+

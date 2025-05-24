@@ -1,3 +1,5 @@
+const systemConfig = require("../../../config/system");
+const PATH_ADMIN = systemConfig.prefixAdmin;
 // Status
 const formStatus = document.querySelector("#form-status");
 if (formStatus) {
@@ -83,3 +85,47 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+// Xóa đơn hàng
+function deleteOrder(orderId) {
+  console.log(orderId);
+  const url = `/admin/order/delete/${orderId}`;
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  // Gửi yêu cầu xóa đơn hàng
+  Swal.fire({
+    title: "Bạn có chắc muốn xóa đơn hàng này?",
+    text: "Hành động này không thể hoàn tác!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Xóa",
+    cancelButtonText: "Hủy",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(url, options)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            Swal.fire("Đã xóa!", "Đơn hàng đã được xóa.", "success").then(() =>
+              window.location.reload()
+            );
+          } else {
+            Swal.fire(
+              "Lỗi!",
+              data.message || "Không thể xóa đơn hàng.",
+              "error"
+            );
+          }
+        })
+        .catch(() => {
+          Swal.fire("Lỗi!", "Đã xảy ra lỗi khi xóa đơn hàng.", "error");
+        });
+    }
+  });
+}

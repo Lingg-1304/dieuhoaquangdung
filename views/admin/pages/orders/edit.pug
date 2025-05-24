@@ -1,0 +1,115 @@
+extends ../../layouts/default.pug
+
+block main  
+  h1 Sửa đơn hàng: #{order.orderId}
+    a(href="/admin/order" class="btn btn-secondary ml-3") ← Quay lại danh sách đơn hàng
+
+  form#editOrderForm(method="POST" action=`/admin/order/edit/${order.orderId}` data-order-id=order.orderId)
+    // Thông tin khách hàng
+    .form-group
+      label(for="name") Họ tên:
+      input#name.form-control(type="text", name="name", value=order.name)
+
+    .form-group
+      label(for="email") Email:
+      input#email.form-control(type="email", name="email", value=order.email)
+
+    .form-group
+      label(for="phone") Số điện thoại:
+      input#phone.form-control(type="text", name="phone", value=order.phone)
+
+    .form-group
+      label(for="address") Địa chỉ:
+      input#address.form-control(type="text", name="address", value=order.address)
+
+    .form-group
+      label(for="note") Ghi chú:
+      textarea#note.form-control(name="note") #{order.note}
+
+    .form-group
+      label(for="paymentMethod") Phương thức thanh toán:
+      select#paymentMethod.form-control(name="paymentMethod")
+        option(value="cod" selected=order.paymentMethod=='cod') Thanh toán khi nhận hàng
+        option(value="bank" selected=order.paymentMethod=='bank') Chuyển khoản ngân hàng
+
+    .form-group
+      label(for="status") Trạng thái:
+      select#status.form-control(name="status")
+        option(value="Chờ xác nhận" selected=order.status=='Chờ xác nhận') Chờ xác nhận
+        option(value="Đã xác nhận" selected=order.status=='Đã xác nhận') Đã xác nhận
+        option(value="Đang giao hàng" selected=order.status=='Đang giao hàng') Đang giao hàng
+        option(value="Đã giao hàng" selected=order.status=='Đã giao hàng') Đã giao hàng
+        option(value="Đã hủy" selected=order.status=='Đã hủy') Đã hủy
+    
+    button.btn.btn-primary.mt-3(type="submit") Lưu thay đổi
+
+    hr
+    h3 Sản phẩm đã đặt
+    table.table.table-bordered
+      thead
+        tr
+          th STT
+          th Slug sản phẩm
+          th Số lượng
+      tbody
+        each item, index in order.items
+          tr
+            td #{index + 1}
+            td
+              p #{item.slug}
+            td
+              p #{item.quantity}
+
+  script.
+    document.getElementById('editOrderForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const formData = new FormData(form);
+      const jsonData = {};
+
+      // Parse formData thành JSON, hỗ trợ items[]
+      formData.forEach((value, key) => {
+        if (key.includes('[')) {
+          const match = key.match(/^(.+?)\[(\d+)\]\[(.+?)\]$/);
+          if (match) {
+            const [_, parentKey, index, field] = match;
+            jsonData[parentKey] = jsonData[parentKey] || [];
+            jsonData[parentKey][index] = jsonData[parentKey][index] || {};
+            jsonData[parentKey][index][field] = value;
+          }
+        } else {
+          jsonData[key] = value;
+        }
+      });
+
+      const result = await Swal.fire({
+        title: 'Xác nhận lưu thay đổi?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Lưu',
+        cancelButtonText: 'Hủy'
+      });
+
+      if (!result.isConfirmed) return;
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(jsonData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          Swal.fire('Thành công', data.message || 'Đã cập nhật đơn hàng!', 'success')
+            .then(() => window.reload());
+        } else {
+          Swal.fire('Lỗi', data.message || 'Không thể lưu thay đổi.', 'error');
+        }
+
+      } catch (err) {
+        Swal.fire('Lỗi', 'Không thể kết nối đến máy chủ.', 'error');
+      }
+    });
